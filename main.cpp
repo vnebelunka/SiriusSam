@@ -1,7 +1,6 @@
 #include <iostream>
 #include <complex>
 #include <chrono>
-#include <Eigen/Dense>
 
 #include "include/Grid.h"
 #include "include/Integrator.h"
@@ -10,22 +9,21 @@
 //TODO: сделать namespace
 //TODO: документация
 
-using namespace Eigen;
 using namespace std::chrono;
 
 complex<double> intEdge(const Grid &g, const pair<int, int>& e1, const pair<int, int>& e2, const pair<int, int>& v1,
                         const pair<int, int>& v2, double k);
 
-Eigen::MatrixXcd calcMatrix(const Grid &g, double k){
+vector<vector<complex<double>>> calcMatrix(const Grid &g, double k){
     size_t n = g.edges.size();
-    Eigen::MatrixXcd M(n, n);
+    vector<vector<complex<double>>> M(n, vector<complex<double>>(n));
     std::ofstream outM("../matrix10_512.txt");
     int i = 0, j;
     for(auto [e1, v1]: g.edges){
         j = 0;
         for(auto [e2, v2]: g.edges){
-            M(i, j) = intEdge(g, e1, e2, v1, v2, k);
-            outM << M(i, j) << " ";
+            M[i][j] = intEdge(g, e1, e2, v1, v2, k);
+            outM << M[i][j] << " ";
             ++j;
         }
         outM << "\n";
@@ -52,19 +50,19 @@ complex<double> intEdge(const Grid &g, const pair<int, int>& e1, const pair<int,
     return ans;
 }
 
-Eigen::VectorXcd calcF(const Grid &g, double k, vec3 Eplr, vec3 v0){
-    Eigen::VectorXcd f(g.edges.size());
+vector<complex<double>> calcF(const Grid &g, double k, vec3 Eplr, vec3 v0){
+    vector<complex<double>> f(g.edges.size());
     int i = 0;
     for(auto [e, v]: g.edges){
         MarkedTriangle tPlus(g.points[e.first], g.points[e.second], g.points[v.first]);
         MarkedTriangle tMinus(g.points[e.first], g.points[e.second], g.points[v.second]);
         auto temp = intF(tPlus, k, Eplr, v0) - intF(tMinus, k, Eplr, v0);
-        f(i) = temp;
+        f[i] = temp;
         ++i;
     }
     return f;
 }
-using Eigen::MatrixXd;
+
 
 int main(){
     Grid g("../data/sphere_5cm_reg.obj");
@@ -80,7 +78,7 @@ int main(){
         cout << "f ready\n";
         ofstream outF("../f10_512.txt");
         for (int i = 0; i < n; ++i) {
-            outF << f(i) << '\n';
+            outF << f[i] << '\n';
         }
     } else if(s == "plot"){
         FILE *fd = fopen("../results/k=10/j10_3012.txt", "r");
