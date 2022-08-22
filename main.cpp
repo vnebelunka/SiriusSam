@@ -17,7 +17,7 @@ complex<double> intEdge(const Grid &g, const pair<int, int>& e1, const pair<int,
 vector<vector<complex<double>>> calcMatrix(const Grid &g, double k){
     size_t n = g.edges.size();
     vector<vector<complex<double>>> M(n, vector<complex<double>>(n));
-    std::ofstream outM("../matrix10_512.txt");
+    std::ofstream outM("../calcs/matrix10_512.txt");
     int i = 0, j;
     for(auto [e1, v1]: g.edges){
         j = 0;
@@ -65,7 +65,7 @@ vector<complex<double>> calcF(const Grid &g, double k, vec3 Eplr, vec3 v0){
 
 
 int main(){
-    Grid g("../data/sphere_5cm_reg.obj");
+    Grid g("../data/data_258.rwg");
     g.read();
     g.get_unique_edges();
     int n = g.edges.size();
@@ -76,12 +76,12 @@ int main(){
         auto A = calcMatrix(g, k);
         auto f = calcF(g, k, {0, 1, 0}, {-1, 0, 0});
         cout << "f ready\n";
-        ofstream outF("../f10_512.txt");
+        ofstream outF("../calcs/f10_512.txt");
         for (int i = 0; i < n; ++i) {
             outF << f[i] << '\n';
         }
     } else if(s == "plot"){
-        FILE *fd = fopen("../results/k=10/j10_3012.txt", "r");
+        FILE *fd = fopen("..results/k=10/j10_3012.txt", "r");
         vector<complex<double>> j(n);
         for(int i = 0; i < n; ++i){
             double a, b;

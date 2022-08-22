@@ -4,8 +4,7 @@
 
 using vec3 = std::array<double, 3>;
 
-static const std::array<double, 4> w ({-9./16, 25./48, 25./48, 25./48});
-
+inline
 std::array<Point, 4> calcBarCoords(Triangle t) {
     std::array<Point, 4> b_coords;
     b_coords[0] = t.a / 3. + t.b / 3. + t.c / 3.;
@@ -22,22 +21,6 @@ complex<double> integrateGaus(const Triangle &t, complex<double> (*f)(Point)) {
         ans += f(x[i]) * w[i];
     }
     ans *= area(t.a, t.b, t.c);
-    return ans;
-}
-
-
-complex<double> integrateGaus(const MarkedTriangle &tx, const MarkedTriangle &ty, double k,
-                              complex<double> (*f)(const Point, const Point, double,
-                                                    const MarkedTriangle&, const MarkedTriangle&)) {
-    std::array<Point, 4> x = calcBarCoords(tx.t), y = calcBarCoords(ty.t);
-    complex<double> ans = 0;
-    for(int i = 0; i < 4; ++i){
-        for(int j = 0; j < 4; ++j){
-            ans += f(x[i], y[j], k, tx, ty) * w[i] * w[j];
-        }
-    }
-    ans *= ty.S;
-    ans *= tx.S;
     return ans;
 }
 
@@ -228,7 +211,7 @@ vec3 e(MarkedTriangle t, Point x){
     return vec3((t.C - x) / t.S);
 }
 
-static complex<double> kerFar(const Point x, const Point y, double k, const MarkedTriangle& tx, const MarkedTriangle& ty){
+static complex<double> kerFar(Point const&x, Point const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double r = dist(x, y);
     const complex<double> i(0, 1);
     complex<double>F = exp(i * k * r) / r;
@@ -237,15 +220,14 @@ static complex<double> kerFar(const Point x, const Point y, double k, const Mark
     return F * (k * k * dot(ex, ey) - Dx * Dy);
 }
 
-complex<double> intFar(const MarkedTriangle &tx, const MarkedTriangle &ty, double k){
-    return integrateGaus(tx, ty, k, &kerFar);
+complex<double> intFar(MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
+    return integrateGaus(tx, ty, &kerFar, k);
 }
-
 
 /*
  * [[k^2 (Cx - x, Cy - y) - 4] e^{ikr - 1} / r ] - k^2 / |x - y|dy dx
  */
-static complex<double> ker_near_1(const Point x, const Point y, double k, const MarkedTriangle& tx, const MarkedTriangle& ty){
+static complex<double> ker_near_1(Point const& x, Point const& y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double r = dist(x, y);
     const complex<double> i(0, 1);
     complex<double> F;
@@ -258,7 +240,7 @@ static complex<double> ker_near_1(const Point x, const Point y, double k, const 
 }
 
 static complex<double> int_near_1(const MarkedTriangle &tx, const MarkedTriangle &ty, double k){
-    return integrateGaus(tx, ty, k, &ker_near_1) / (tx.S * ty.S);
+    return integrateGaus(tx, ty, &ker_near_1, k) / (tx.S * ty.S);
 }
 
 static complex<double> int_near_2(const MarkedTriangle& tx, const MarkedTriangle& ty, double k){

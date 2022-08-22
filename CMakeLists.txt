@@ -3,10 +3,10 @@ project(Sirius)
 
 set(CMAKE_CXX_STANDARD 20)
 
-#add_subdirectory(matplotplusplus)
 
-add_executable(Sirius main.cpp include/Grid.h test/test.cpp include/Geometry.h src/Geometry.cpp include/Integrator.h src/Integrator.cpp src/Grid.cpp)
+set(GCC_COVERAGE_COMPILE_FLAGS "-O2 -pg")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
-#target_link_libraries(Sirius PUBLIC matplot)
+add_executable(Sirius main.cpp include/Grid.h test/test.cpp include/Geometry.h src/Geometry.cpp include/Integrator.h src/Integrator.cpp src/Grid.cpp src/Integrator.tpp)
 
-#target_link_libraries(Sirius ${Eigen_LIBRARIES})
+target_include_directories(Sirius PRIVATE include)

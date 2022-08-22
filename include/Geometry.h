@@ -104,7 +104,7 @@ struct iTriangle{
 
 //TODO: отнаследоваться
 struct MarkedTriangle{
-    Triangle t;
+    const Triangle t;
     Point C;
     double S;
     MarkedTriangle(Point v1, Point v2, Point v3) : t(v1, v2, v3), C(v3){

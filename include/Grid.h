@@ -78,7 +78,6 @@ struct Grid{
 
     double diametr_grid(){
         double ans = -1;
-        int imax = 0;
         for(auto &t : triangles){
             double temp = max_edge(t);
             if(temp > ans) {

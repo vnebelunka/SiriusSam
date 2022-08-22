@@ -19,8 +19,11 @@ complex<double> integrateGaus(const Triangle &t, complex<double> f(Point x));
 
 complex<double> surfIntegral1D(const std::vector<Triangle>& grid, complex<double> f(Point));
 
-complex<double> integrateGaus(const MarkedTriangle &tx, const MarkedTriangle &ty, double k,
-                              complex<double> (*f)(const Point, const Point, double, const MarkedTriangle&, const MarkedTriangle&));
+
+template<typename ... Args>
+complex<double> integrateGaus(MarkedTriangle const& tx, MarkedTriangle const& ty,
+                              complex<double> (*f)(Point const&x, Point const&y, MarkedTriangle const&, MarkedTriangle const&,Args...),
+                                      Args... args);
 
 double integral1Divr(const Triangle& t, const Point& a);
 
@@ -33,5 +36,8 @@ complex<double> intF(const MarkedTriangle &t, double k, vec3 Eplr, vec3 v0);
 array<complex<double>, 3> intSigma(const MarkedTriangle &t, vec3 tau);
 
 double calcSigma(const Grid &g, vector<complex<double>>& j, double k, vec3 tau);
+
+
+#include "../src/Integrator.tpp"
 
 #endif //SIRIUS_INTEGRATOR_H
