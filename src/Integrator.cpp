@@ -4,23 +4,13 @@
 
 using vec3 = std::array<double, 3>;
 
-inline
-std::array<Point, 4> calcBarCoords(Triangle t) {
-    std::array<Point, 4> b_coords;
-    b_coords[0] = t.a / 3. + t.b / 3. + t.c / 3.;
-    b_coords[1] = t.a * (3. / 5) + t.b / 5. + t.c / 5.;
-    b_coords[2] = t.a / 5. + t.b * (3. / 5) + t.c / 5.;
-    b_coords[3] = t.a / 5. + t.b / 5 + t.c * (3. / 5.);
-    return b_coords;
-}
-
 complex<double> integrateGaus(const Triangle &t, complex<double> (*f)(Point)) {
-    std::array<Point, 4> x = calcBarCoords(t);
+    const array<Point, 4> &x = t.barCoords;
     complex<double> ans = 0;
     for(int i = 0; i < 4; ++i){
         ans += f(x[i]) * w[i];
     }
-    ans *= area(t.a, t.b, t.c);
+    ans *= t.S;
     return ans;
 }
 
@@ -207,17 +197,21 @@ double integral1Divr(const Triangle& t, const Point& a) {
     return Integral1Divr_inv(abc, d);
 }
 
+static inline
 vec3 e(MarkedTriangle t, Point x){
-    return vec3((t.C - x) / t.S);
+    return (t.C - x) / t.t.S;
 }
+
+
+/*
+ *  e^(ikr) [k^2 * (ex, ey) - 4 /(S.x * S.y)] / r
+ */
 
 static complex<double> kerFar(Point const&x, Point const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double r = dist(x, y);
-    const complex<double> i(0, 1);
-    complex<double>F = exp(i * k * r) / r;
-    double Dx = -2 / tx.S, Dy = -2 / ty.S;
+    complex<double> F = exp(complex(0., 1.) * k * r) / r;
     vec3 ex = e(tx, x), ey = e(ty, y);
-    return F * (k * k * dot(ex, ey) - Dx * Dy);
+    return F * (k * k * dot(ex, ey) - 4 / (ty.t.S * tx.t.S));
 }
 
 complex<double> intFar(MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
@@ -240,11 +234,11 @@ static complex<double> ker_near_1(Point const& x, Point const& y, MarkedTriangle
 }
 
 static complex<double> int_near_1(const MarkedTriangle &tx, const MarkedTriangle &ty, double k){
-    return integrateGaus(tx, ty, &ker_near_1, k) / (tx.S * ty.S);
+    return integrateGaus(tx, ty, &ker_near_1, k) / (tx.t.S * ty.t.S);
 }
 
 static complex<double> int_near_2(const MarkedTriangle& tx, const MarkedTriangle& ty, double k){
-    std::array<Point, 4> x = calcBarCoords(tx.t);
+    const array<Point, 4>& x = tx.t.barCoords;
     complex<double> ans = 0;
     for(int i = 0; i < 4; ++i){
             double integral_inner = integral1Divr(ty.t, x[i]);
@@ -252,8 +246,7 @@ static complex<double> int_near_2(const MarkedTriangle& tx, const MarkedTriangle
             ker -= 2;
             ans += ker * integral_inner * w[i];
     }
-    //ans *= area(tx.t.a, tx.t.b, tx.t.c);
-    ans /= ty.S;
+    ans /= ty.t.S;
     return ans;
 }
 
@@ -267,29 +260,12 @@ complex<double> intNear(const MarkedTriangle &tx, const MarkedTriangle &ty, doub
 
 // (e_x(x), E_plr) e^{i k (v0, x)}
 complex<double> intF(const MarkedTriangle &t, double k, vec3 Eplr, vec3 v0) {
-    auto x = calcBarCoords(t.t);
+    const array<Point, 4> &x = t.t.barCoords;
     complex<double> ans = 0;
     for (int i = 0; i < 4; ++i) {
         ans += dot(e(t, x[i]), Eplr) * exp(complex(0., 1.) * k * dot(v0, vec3(x[i]))) * w[i];
     }
-    ans *= t.S;
-    return ans;
-}
-
-using vec3c = array<complex<double>, 3>;
-
-array<complex<double>, 3> intSigma(const MarkedTriangle &t, const vec3 tau){
-    auto x = calcBarCoords(t.t);
-    vec3c ans;
-    complex<double> i(0, 1);
-    for (int k = 0; k < 4; ++k) {
-        vec3 ei = e(t, x[k]);
-        vec3 vecKer = ei - tau * dot(ei, tau);
-        vec3c vecKerC;
-        vecKerC[0] = {vecKer[0], 0}, vecKerC[1] = {vecKer[1], 0}, vecKerC[2] = {vecKer[2], 0};
-        ans += vecKerC * exp(-i * dot(tau, vec3(x[k]))) * w[k];
-    }
-    ans = ans * t.S;
+    ans *= t.t.S;
     return ans;
 }
 
@@ -310,7 +286,7 @@ complex<double> calcJ(const Grid &g, arma::cx_vec const& j, const pair<int, int>
 
 double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 tau){
     vec3c ans;
-    for(auto &t: g.triangles){
+    for(auto &t: g.itriangles){
         pair<int, int> edges[3];
         edges[0] = {t.iv1, t.iv2}, edges[1] = {t.iv2, t.iv3}, edges[2] = {t.iv1, t.iv3};
         complex<double> coeffs[3];
@@ -319,15 +295,16 @@ double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 tau){
         coeffs[2] = calcJ(g, j, edges[2], t.iv2);
         Triangle sigmai (g.points[t.iv1], g.points[t.iv2], g.points[t.iv3]);
         vec3c intSigma;
-        auto x = calcBarCoords(sigmai);
+
+        const array<Point, 4> &x = sigmai.barCoords;
         for(int i = 0; i < 4; ++i){
             vec3c g = (sigmai.c - x[i]) * coeffs[0] + (sigmai.a - x[i]) * coeffs[1] + (sigmai.b - x[i]) * coeffs[2];
-            g = g * (1. / area(sigmai));
+            g = g * (1. / sigmai.S);
             vec3c kervec = g - tau * dot(tau, g);
             vec3c ker = kervec * k * k * exp(-complex(0., 1.) * k * dot(tau, vec3(x[i])));
             intSigma += ker * w[i];
         }
-        intSigma = intSigma * area((sigmai));
+        intSigma = intSigma * sigmai.S;
         ans += intSigma;
     }
     return normsqr(ans) * 4 * M_PI;

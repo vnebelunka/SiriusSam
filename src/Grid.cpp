@@ -3,7 +3,7 @@
 std::vector<Triangle> Grid::get_unique_tringles() {
     std::set<std::array<int, 3>> iunique_triangles;
     std::vector<Triangle> utriangles;
-    for(auto &t: triangles){
+    for(auto &t: itriangles){
         std::array<int, 3> temp({t.iv1, t.iv2, t.iv3});
         std::sort(temp.begin(), temp.end());
         iunique_triangles.insert(temp);
@@ -22,19 +22,19 @@ void Grid::read() {
         data_file >> points[i].x >> points[i].y >> points[i].z;
     }
     data_file >> num_triangles;
-    triangles.reserve(2 * num_triangles);
+    itriangles.reserve(2 * num_triangles);
     for (int i = 0; i < num_triangles; ++i) {
         size_t v1, v2, v3, v4;
         data_file >> v1 >> v2 >> v3 >> v4;
         --v1, --v2, --v3, --v4;
         if(v3 == v4){
-            triangles.emplace_back(v1, v2, v3);
+            itriangles.emplace_back(v1, v2, v3);
         } else {
-            triangles.emplace_back(v1, v2, v3);
-            triangles.emplace_back(v2, v3, v4);
+            itriangles.emplace_back(v1, v2, v3);
+            itriangles.emplace_back(v2, v3, v4);
         }
     }
-    num_triangles = triangles.size();
+    num_triangles = itriangles.size();
 }
 
 void Grid::insert_edge(int e1, int e2, int v) {
@@ -46,22 +46,15 @@ void Grid::insert_edge(int e1, int e2, int v) {
 }
 
 void Grid::get_unique_edges() {
-    for(auto &t : triangles){
+    for(auto &t : itriangles){
         std::array<int, 3> e({t.iv1, t.iv2, t.iv3});
         std::sort(e.begin(), e.end()); //TODO: возможно лучше ручками
         insert_edge(e[0], e[1], e[2]);
         insert_edge(e[0], e[2], e[1]);
         insert_edge(e[1], e[2], e[0]);
     }
-    //triangles.clear(); //TODO: так лучше не делать)
+    //itriangles.clear(); //TODO: так лучше не делать)
 }
-
-/*void Grid::plot_grid() {
-    auto [x, y, z] = get_coordinates();
-    matplot::scatter3(x,y,z);
-    matplot::show();
-}*/
-
 void Grid::print_edges() {
     for (auto [k, v]: edges) {
         std::cout << k.first << " " << k.second << ": " << v.first << " " << v.second << '\n';

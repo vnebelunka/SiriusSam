@@ -5,9 +5,9 @@ using vec3 = array<double, 3>;
 
 
 double area(const Point &a, const Point &b, const Point &c) {
-    Point AB = b - a;
-    Point AC = c - b;
-    auto n = cross(vec3(AB), vec3(AC));
+    vec3 AB = b - a;
+    vec3 AC = c - b;
+    auto n = cross(AB, AC);
     return 0.5 * norm(n);
 }
 
@@ -16,9 +16,9 @@ double area(const Triangle &t) {
 }
 
 vec3 normal(const Point &a, const Point &b, const Point &c) {
-    Point AB = b - a;
-    Point AC = c - b;
-    auto n = cross(vec3(AB), vec3(AC));
+    vec3 AB = b - a;
+    vec3 AC = c - b;
+    auto n = cross(AB, AC);
     auto modn = norm(n);
     return {n[0] / modn, n[1] / modn, n[2] / modn};
 }
@@ -65,6 +65,10 @@ vec3 operator*(const vec3 &ac, const double mult){
         x *= mult;
     }
     return temp;
+}
+
+vec3 operator/(const vec3 &lhs , const double div){
+    return {lhs[0] / div, lhs[1] / div, lhs[2] / div};
 }
 
 vector<double> operator/(const vector<double> &lhs, const double div) {
@@ -121,4 +125,13 @@ vec3c operator*(const vec3 a, complex<double> mult) {
 
 complex<double> dot(const array<double, 3> &a, const array<complex<double>, 3> &b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+std::array<Point, 4> calcBarCoords(const Point &a, const Point &b, const Point &c) {
+    std::array<Point, 4> b_coords;
+    b_coords[0] = a / 3. + b / 3. + c / 3.;
+    b_coords[1] = a * (3. / 5) + b / 5. + c / 5.;
+    b_coords[2] = a / 5. + b * (3. / 5) + c / 5.;
+    b_coords[3] = a / 5. + b / 5 + c * (3. / 5.);
+    return b_coords;
 }

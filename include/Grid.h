@@ -18,10 +18,11 @@ struct Grid{
     size_t num_points = 0;
     std::vector<Point> points = {};
     size_t num_triangles = 0;
-    std::vector<iTriangle> triangles = {};
+    std::vector<iTriangle> itriangles = {};
 
     //TODO: мб лучше структурой.
     std::map<std::pair<int, int>, std::pair<int, int>> edges;
+    std::map<std::tuple<int, int, int>, Triangle> triangles = {};
 
     Grid(const std::string &file_name);
 
@@ -43,13 +44,15 @@ struct Grid{
 
     std::vector<Triangle> get_unique_tringles();
 
-    std::vector<MarkedTriangle> getMarkedTriangles(){
-        std::vector<MarkedTriangle> t;
+    void getMarkedTriangles(){
         for(auto [e, v] : edges){
-            t.emplace_back(points[e.first], points[e.second], points[v.first]);
-            t.emplace_back(points[e.first], points[e.second], points[v.second]);
+            triangles.insert(std::make_pair<std::tuple<int, int, int>, Triangle>
+                ({e.first, e.second, v.first}, {points[e.first], points[e.second], points[v.first]})
+                );
+            triangles.insert(std::make_pair<std::tuple<int, int, int>, Triangle>
+                                     ({e.first, e.second, v.second}, {points[e.first], points[e.second], points[v.second]})
+            );
         }
-        return t;
     }
 
     ~Grid(){data_file.close();}
@@ -78,7 +81,7 @@ struct Grid{
 
     double diametr_grid(){
         double ans = -1;
-        for(auto &t : triangles){
+        for(auto &t : itriangles){
             double temp = max_edge(t);
             if(temp > ans) {
                 ans = temp;

@@ -5,8 +5,11 @@
 #include <cmath>
 #include <array>
 #include <complex>
+#include <armadillo>
 
 using namespace std;
+
+using vec3 = std::array<double, 3>;
 
 //TODO: разделить на файл с примитивами и работой с векторами + перейти к шаблонам.
 
@@ -28,6 +31,8 @@ struct Point {
         return *this;
     }
 
+    Point& operator=(const Point& other) = default;
+
     friend ostream& operator<<(ostream& os, const Point& p);
 
     Point operator-=(const Point& other) {
@@ -43,10 +48,8 @@ struct Point {
         return tmp;
     }
 
-    friend Point operator-(const Point& a, const Point& b) {
-        Point tmp = a;
-        tmp -= b;
-        return tmp;
+    friend vec3 operator-(const Point& a, const Point& b) {
+        return {a.x - b.x, a.y - b.y, a.z - b.z};
     }
 
     Point operator/=(const double other) {
@@ -75,8 +78,8 @@ struct Point {
         return tmp;
     }
 
-    explicit operator array<double, 3>() const{
-        return array{x, y, z};
+    explicit operator vec3() const{
+        return {x, y, z};
     }
 
     explicit operator const array <double, 3>(){
@@ -88,13 +91,23 @@ struct Point {
     }
 };
 
+
+double area(const Point &a, const Point &b, const Point &c);
+
+
+std::array<Point, 4> calcBarCoords(Point const& a, Point const& b, Point const& c);
+
 struct Triangle{
     Point a, b, c;
-    Triangle(Point a, Point b, Point c) : a(a), b(b), c(c){}
-    Triangle(std::array<Point, 3> a) : a(a[0]), b(a[1]), c(a[2]){}
+    double S;
+    array<Point, 4> barCoords;
+    Triangle(const Point& a,const Point& b, const Point& c) : a(a), b(b), c(c){
+        S = area(a,b,c);
+        barCoords = calcBarCoords(a, b, c);
+    }
+    Triangle& operator=(const Triangle& other) = default;
 };
 
-double area(const Triangle &t);
 
 struct iTriangle{
     int iv1, iv2, iv3;
@@ -106,34 +119,35 @@ struct iTriangle{
 struct MarkedTriangle{
     const Triangle t;
     Point C;
-    double S;
-    MarkedTriangle(Point v1, Point v2, Point v3) : t(v1, v2, v3), C(v3){
-        S = area(t);
-    }
+    MarkedTriangle(Point const& v1, Point const& v2, Point const& v3) : t(v1, v2, v3), C(v3){}
+    MarkedTriangle(const Triangle &otherT): t(otherT){C = otherT.c;}
 };
 
-array<double, 3> operator+(const array<double, 3> &lhs , const array<double, 3> &rhs);
+vec3 operator+(const vec3 &lhs , const vec3 &rhs);
 
 vector<double> operator/(const vector<double> &lhs , const double div);
 
 vector<double>& operator*(vector<double> &ac , const double mult);
 
-array<double, 3> operator*(const array<double, 3> &ac, const double mult);
+vec3 operator*(const vec3 &ac, const double mult);
 
-array<double, 3> operator-(const array<double, 3> &lhs, const array<double, 3> &rhs);
+vec3 operator-(const vec3 &lhs, const vec3 &rhs);
 
-double dot(const array<double, 3> &a , const array<double, 3> &b);
-complex<double> dot(const array<double, 3> &a, const array<complex<double>, 3> &b);
+vec3 operator/(const vec3 &lhs , const double div);
 
-array<double, 3> cross(std::array<double, 3> a, std::array<double, 3> b);
+double dot(const vec3 &a , const vec3 &b);
+complex<double> dot(const vec3 &a, const array<complex<double>, 3> &b);
 
-double norm(array<double, 3> v);
+vec3 cross(vec3 a, vec3 b);
+
+double norm(vec3 v);
 double norm(Point p);
 double normsqr(array<complex<double>, 3> p);
 
-array<double, 3> normal(const Point &a, const Point &b, const Point &c);
+vec3 normal(const Point &a, const Point &b, const Point &c);
 
 double area(const Point &a, const Point &b, const Point &c);
+double area(const Triangle &t);
 
 double dist(const Point& x, const Point& y);
 
@@ -145,7 +159,6 @@ vec3c operator-(const vec3c& a,const vec3c& b);
 
 vec3c operator*(const vec3c& a, complex<double> mult);
 
-using vec3 = array<double, 3>;
 
 vec3c operator*(const vec3 a, complex<double> mult);
 

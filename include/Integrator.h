@@ -14,7 +14,6 @@
 
 using vec3 = std::array<double, 3>;
 
-std::array<Point, 4> calcBarCoords(Triangle t);
 
 complex<double> integrateGaus(const Triangle &t, complex<double> f(Point x));
 
@@ -34,7 +33,6 @@ complex<double> intNear(const MarkedTriangle &tx, const MarkedTriangle &ty, doub
 
 complex<double> intF(const MarkedTriangle &t, double k, vec3 Eplr, vec3 v0);
 
-array<complex<double>, 3> intSigma(const MarkedTriangle &t, vec3 tau);
 
 double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 tau);
 

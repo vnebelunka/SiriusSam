@@ -35,10 +35,10 @@ cx_mat calcMatrix(const Grid &g, double k){
 
 complex<double> intEdge(const Grid &g, const pair<int, int>& e1, const pair<int, int>& e2, const pair<int, int>& v1,
                        const pair<int, int>& v2, double k){
-    MarkedTriangle txPlus(g.points[e1.first], g.points[e1.second], g.points[v1.first]);
-    MarkedTriangle txMinus(g.points[e1.first], g.points[e1.second], g.points[v1.second]);
-    MarkedTriangle tyPlus(g.points[e2.first], g.points[e2.second], g.points[v2.first]);
-    MarkedTriangle tyMinus(g.points[e2.first], g.points[e2.second], g.points[v2.second]);
+    MarkedTriangle txPlus(g.triangles.find({e1.first, e1.second, v1.first})->second);
+    MarkedTriangle txMinus(g.triangles.find({e1.first, e1.second, v1.second})->second);
+    MarkedTriangle tyPlus(g.triangles.find({e2.first, e2.second, v2.first})->second);
+    MarkedTriangle tyMinus(g.triangles.find({e2.first, e2.second, v2.second})->second);
     complex<double> ans;
     if(g.check_dist(e1, e2)){
         ans = intFar(txPlus, tyPlus, k) + intFar(txMinus, tyMinus, k);
@@ -69,18 +69,30 @@ int main(int argc, char* argv[]){
     Grid g(dname);
     g.read();
     g.get_unique_edges();
+    g.getMarkedTriangles();
     size_t n = g.edges.size();
     string s;
     cin >> s;
     if(s == "calc") {
+        ofstream outA("./calcs/matrix.txt");
         cx_mat A = calcMatrix(g, k);
+        for(int i = 0; i < n; ++i){
+            for(int j = 0; j < n; ++j){
+                outA << A(i, j) << " ";
+            }
+            outA << '\n';
+        }
         cx_vec f = calcF(g, k, {0, 1, 0}, {-1, 0, 0});
         cout << "f ready\n";
-        ofstream outF("../calcs/f10_512arma.txt");
+        ofstream outF("./calcs/f.txt");
         for (int i = 0; i < n; ++i) {
             outF << f(i) << '\n';
         }
         cx_vec j = arma::solve(A, f);
+        ofstream outJ("./calcs/j.txt");
+        for(int i = 0; i < n; ++i){
+            outJ <<j(i) << '\n';
+        }
         int parts = 360;
         vector<double> sigma(parts), x(parts);
         for(int i = 0; i < parts; ++i){
@@ -90,7 +102,7 @@ int main(int argc, char* argv[]){
             x[i] = i / 2.;
             cout << i  << '/' << parts << '\n';
         }
-        ofstream out("res10_3012arma.txt");
+        ofstream out("./calcs/sigma.txt");
         for(int i = 0; i < parts; ++i){
             out << x[i] << " ";
         }

@@ -21,7 +21,7 @@ void test_unique_edges(){
     r.read();
     r.get_unique_edges();
     std::set<std::array<int, 3>> unique_triangles;
-    for(auto &t: r.triangles){
+    for(auto &t: r.itriangles){
         std::array<int, 3> temp({t.iv1, t.iv2, t.iv3});
         std::sort(temp.begin(), temp.end());
         unique_triangles.insert(temp);
