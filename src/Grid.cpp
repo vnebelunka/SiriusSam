@@ -20,7 +20,6 @@ void Grid::read() {
     points.resize(num_points);
     for (int i = 0; i < num_points; ++i) {
         data_file >> points[i].x >> points[i].y >> points[i].z;
-        points[i].x /= 50, points[i].y /= 50, points[i].z /= 50;
     }
     data_file >> num_triangles;
     triangles.reserve(2 * num_triangles);

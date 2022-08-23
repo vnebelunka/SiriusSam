@@ -293,7 +293,7 @@ array<complex<double>, 3> intSigma(const MarkedTriangle &t, const vec3 tau){
     return ans;
 }
 
-complex<double> calcJ(const Grid &g, vector<complex<double>>& j, const pair<int, int> e1, int v){
+complex<double> calcJ(const Grid &g, arma::cx_vec const& j, const pair<int, int> e1, int v){
     pair<int, int> p = {min(e1.first, e1.second), max(e1.first, e1.second)};
     auto it = g.edges.find(p);
     size_t i = std::distance( g.edges.begin(), it);
@@ -308,7 +308,7 @@ complex<double> calcJ(const Grid &g, vector<complex<double>>& j, const pair<int,
 }
 
 
-double calcSigma(const Grid &g, vector<complex<double>>& j, double k, vec3 tau){
+double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 tau){
     vec3c ans;
     for(auto &t: g.triangles){
         pair<int, int> edges[3];

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <complex>
 #include <chrono>
+#include <armadillo>
 
 #include "include/Grid.h"
 #include "include/Integrator.h"
@@ -10,23 +11,22 @@
 //TODO: документация
 
 using namespace std::chrono;
+using arma::cx_mat;
+using arma::cx_vec;
 
 complex<double> intEdge(const Grid &g, const pair<int, int>& e1, const pair<int, int>& e2, const pair<int, int>& v1,
                         const pair<int, int>& v2, double k);
 
-vector<vector<complex<double>>> calcMatrix(const Grid &g, double k){
+cx_mat calcMatrix(const Grid &g, double k){
     size_t n = g.edges.size();
-    vector<vector<complex<double>>> M(n, vector<complex<double>>(n));
-    std::ofstream outM("../calcs/matrix10_512.txt");
+    cx_mat M(n, n);
     int i = 0, j;
     for(auto [e1, v1]: g.edges){
         j = 0;
         for(auto [e2, v2]: g.edges){
-            M[i][j] = intEdge(g, e1, e2, v1, v2, k);
-            outM << M[i][j] << " ";
+            M(i,j) = intEdge(g, e1, e2, v1, v2, k);
             ++j;
         }
-        outM << "\n";
         ++i;
         cout << i << '/' << n << '\n';
     }
@@ -50,8 +50,8 @@ complex<double> intEdge(const Grid &g, const pair<int, int>& e1, const pair<int,
     return ans;
 }
 
-vector<complex<double>> calcF(const Grid &g, double k, vec3 Eplr, vec3 v0){
-    vector<complex<double>> f(g.edges.size());
+cx_vec calcF(const Grid &g, double k, vec3 Eplr, vec3 v0){
+    cx_vec f(g.edges.size());
     int i = 0;
     for(auto [e, v]: g.edges){
         MarkedTriangle tPlus(g.points[e.first], g.points[e.second], g.points[v.first]);
@@ -63,33 +63,24 @@ vector<complex<double>> calcF(const Grid &g, double k, vec3 Eplr, vec3 v0){
     return f;
 }
 
-
-int main(){
-    Grid g("../data/data_258.rwg");
+int main(int argc, char* argv[]){
+    char *dname = argv[1];
+    double k = atof(argv[2]);
+    Grid g(dname);
     g.read();
     g.get_unique_edges();
-    int n = g.edges.size();
-    double k = 10;
+    size_t n = g.edges.size();
     string s;
     cin >> s;
     if(s == "calc") {
-        auto A = calcMatrix(g, k);
-        auto f = calcF(g, k, {0, 1, 0}, {-1, 0, 0});
+        cx_mat A = calcMatrix(g, k);
+        cx_vec f = calcF(g, k, {0, 1, 0}, {-1, 0, 0});
         cout << "f ready\n";
-        ofstream outF("../calcs/f10_512.txt");
+        ofstream outF("../calcs/f10_512arma.txt");
         for (int i = 0; i < n; ++i) {
-            outF << f[i] << '\n';
+            outF << f(i) << '\n';
         }
-    } else if(s == "plot"){
-        FILE *fd = fopen("..results/k=10/j10_3012.txt", "r");
-        vector<complex<double>> j(n);
-        for(int i = 0; i < n; ++i){
-            double a, b;
-            fscanf(fd, " (%lf", &a);
-            fscanf(fd, "%lfj)", &b);
-            //cout << a <<" "<< b << '\n';
-            j[i] = complex<double>(a, b);
-        }
+        cx_vec j = arma::solve(A, f);
         int parts = 360;
         vector<double> sigma(parts), x(parts);
         for(int i = 0; i < parts; ++i){
@@ -99,7 +90,7 @@ int main(){
             x[i] = i / 2.;
             cout << i  << '/' << parts << '\n';
         }
-        ofstream out("res10_3012.txt");
+        ofstream out("res10_3012arma.txt");
         for(int i = 0; i < parts; ++i){
             out << x[i] << " ";
         }
