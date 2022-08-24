@@ -16,3 +16,14 @@ complex<double> integrateGaus(MarkedTriangle const& tx, MarkedTriangle const& ty
     ans *= tx.t.S;
     return ans;
 }
+
+template<typename ... Args>
+complex<double> integrateGaus(Triangle const& t, complex<double> (*f)(Point const& x, Args... args),  Args... args) {
+    const array<Point, 4> &x = t.barCoords;
+    complex<double> ans = 0;
+    for(int i = 0; i < 4; ++i){
+        ans += f(x[i], args...) * w[i];
+    }
+    ans *= t.S;
+    return ans;
+}

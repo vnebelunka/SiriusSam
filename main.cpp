@@ -17,9 +17,8 @@ using arma::cx_vec;
 complex<double> intEdge(const Grid &g, const pair<int, int>& e1, const pair<int, int>& e2, const pair<int, int>& v1,
                         const pair<int, int>& v2, double k);
 
-cx_mat calcMatrix(const Grid &g, double k){
+void calcMatrix(const Grid &g, double k, cx_mat& M){
     size_t n = g.edges.size();
-    cx_mat M(n, n);
     int i = 0, j;
     for(auto [e1, v1]: g.edges){
         j = 0;
@@ -30,7 +29,6 @@ cx_mat calcMatrix(const Grid &g, double k){
         ++i;
         cout << i << '/' << n << '\n';
     }
-    return M;
 }
 
 complex<double> intEdge(const Grid &g, const pair<int, int>& e1, const pair<int, int>& e2, const pair<int, int>& v1,
@@ -75,7 +73,8 @@ int main(int argc, char* argv[]){
     cin >> s;
     if(s == "calc") {
         ofstream outA("./calcs/matrix.txt");
-        cx_mat A = calcMatrix(g, k);
+        cx_mat A(n, n);
+        calcMatrix(g, k, A);
         for(int i = 0; i < n; ++i){
             for(int j = 0; j < n; ++j){
                 outA << A(i, j) << " ";

@@ -8,17 +8,14 @@
 
 //TODO: разделить на интегратор и сами интегралы по ядрам
 
-//TODO: попробовать привязать к Eigen.
-
-//TODO: переписать квадратуру на функцию с произвольным числом доп параметров и обьединить все квадратуры.
-
 using vec3 = std::array<double, 3>;
 
 
-complex<double> integrateGaus(const Triangle &t, complex<double> f(Point x));
+complex<double> surfIntegral1D(const std::vector<Triangle>& grid, complex<double> f(Point const&));
 
-complex<double> surfIntegral1D(const std::vector<Triangle>& grid, complex<double> f(Point));
 
+template<typename ... Args>
+complex<double> integrateGaus(Triangle const& t, complex<double> (*f)(Point const& x,  Args... args),  Args... args);
 
 template<typename ... Args>
 complex<double> integrateGaus(MarkedTriangle const& tx, MarkedTriangle const& ty,
@@ -29,13 +26,11 @@ double integral1Divr(const Triangle& t, const Point& a);
 
 complex<double> intFar(const MarkedTriangle &tx, const MarkedTriangle &ty, double k);
 
-complex<double> intNear(const MarkedTriangle &tx, const MarkedTriangle &ty, double k);
+complex<double> intNear(MarkedTriangle const& tx, MarkedTriangle const& ty, double k);
 
-complex<double> intF(const MarkedTriangle &t, double k, vec3 Eplr, vec3 v0);
+complex<double> intF(const MarkedTriangle &t, double k, vec3 const& Eplr, vec3 const& v0);
 
-
-double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 tau);
-
+double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau);
 
 #include "../src/Integrator.tpp"
 

@@ -66,6 +66,7 @@ struct Grid{
 
 
     //TODO: лучше проверять это через диаметры.
+    //TODO: переписать на функцию от 4 треугольников: они уже найдены в calcMatrix
     bool check_dist(pair<int, int> p1, pair<int, int> p2) const{
         Point m1 = (points[p1.first] + points[p1.second]) / 2;
         Point m2 = (points[p2.first] + points[p2.second]) / 2;

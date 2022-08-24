@@ -4,19 +4,10 @@
 
 using vec3 = std::array<double, 3>;
 
-complex<double> integrateGaus(const Triangle &t, complex<double> (*f)(Point)) {
-    const array<Point, 4> &x = t.barCoords;
-    complex<double> ans = 0;
-    for(int i = 0; i < 4; ++i){
-        ans += f(x[i]) * w[i];
-    }
-    ans *= t.S;
-    return ans;
-}
 
-complex<double> surfIntegral1D(const vector<Triangle> &grid, complex<double> f(Point)){
+complex<double> surfIntegral1D(const vector<Triangle> &grid, complex<double> f(Point const&)){
     complex<double> integral = 0;
-    for(auto t: grid) {
+    for(auto const& t: grid) {
         auto temp = integrateGaus(t, f);
         integral += temp;
     }
@@ -38,7 +29,7 @@ static void rot(double &x, double &y, double cs, double sn) {
     x = tmp;
 }
 
-static double Integral1Divr_inv(std::array<vec3, 3> ABC, vec3 D){
+static double Integral1Divr_inv(std::array<vec3, 3> const& ABC, vec3 const& D){
     double p0, l, l_pl, ratio, r, ad, proj;
     double n[3], edges[3][3], Q[3][2], DABC[7][3], c[3], s[3];
     int ed,  emn;
@@ -198,7 +189,7 @@ double integral1Divr(const Triangle& t, const Point& a) {
 }
 
 static inline
-vec3 e(MarkedTriangle t, Point x){
+vec3 e(MarkedTriangle const& t, Point const& x){
     return (t.C - x) / t.t.S;
 }
 
@@ -209,7 +200,8 @@ vec3 e(MarkedTriangle t, Point x){
 
 static complex<double> kerFar(Point const&x, Point const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double r = dist(x, y);
-    complex<double> F = exp(complex(0., 1.) * k * r) / r;
+    static complex<double> i(0., 1.);
+    complex<double> F = exp(i * k * r) / r;
     vec3 ex = e(tx, x), ey = e(ty, y);
     return F * (k * k * dot(ex, ey) - 4 / (ty.t.S * tx.t.S));
 }
@@ -219,54 +211,47 @@ complex<double> intFar(MarkedTriangle const& tx, MarkedTriangle const& ty, doubl
 }
 
 /*
- * [[k^2 (Cx - x, Cy - y) - 4] e^{ikr - 1} / r ] - k^2 / |x - y|dy dx
+ * [[k^2 (Cx - x, Cy - y) - 4] e^{ikr - 1} / r ] - k^2 / r dy dx
  */
 static complex<double> ker_near_1(Point const& x, Point const& y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double r = dist(x, y);
-    const complex<double> i(0, 1);
+    static const complex<double> i(0, 1);
     complex<double> F;
     if(r < std::numeric_limits<double>::epsilon() * norm(y)){
         F = i * k;
     } else {
         F = (exp(i * k * r) - complex(1., 0.)) / r;
     }
-    return F * (k * k * dot(vec3(tx.C - x), vec3(ty.C - y)) - 4.) - k * k / 2. * dist(x, y);
+    return F * (k * k * dot(vec3(tx.C - x), vec3(ty.C - y)) - 4.) - k * k / 2. * r;
 }
 
 static complex<double> int_near_1(const MarkedTriangle &tx, const MarkedTriangle &ty, double k){
     return integrateGaus(tx, ty, &ker_near_1, k) / (tx.t.S * ty.t.S);
 }
 
-static complex<double> int_near_2(const MarkedTriangle& tx, const MarkedTriangle& ty, double k){
-    const array<Point, 4>& x = tx.t.barCoords;
-    complex<double> ans = 0;
-    for(int i = 0; i < 4; ++i){
-            double integral_inner = integral1Divr(ty.t, x[i]);
-            double ker = (k * k / 2 * (dot(vec3(x[i]), vec3(x[i] - ty.C)) + dot(vec3(ty.C), vec3(tx.C - x[i]))));
-            ker -= 2;
-            ans += ker * integral_inner * w[i];
-    }
-    ans /= ty.t.S;
-    return ans;
+static complex<double> ker_near_2(Point const& x, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
+    double integral_inner = integral1Divr(ty.t, x); // here /= tx.S
+    double ker = (k * k / 2 * (dot(vec3(x), vec3(x - ty.C)) + dot(vec3(ty.C), vec3(tx.C - x))));
+    ker -= 2;
+    return ker * integral_inner / (ty.t.S * tx.t.S);
 }
 
-complex<double> intNear(const MarkedTriangle &tx, const MarkedTriangle &ty, double k) {
-    auto i1 = int_near_1(tx, ty, k);
-    auto i2 = int_near_2(tx, ty, k);
-    auto i3 = int_near_2(ty, tx, k);
-    return i1 + i2 + i3;
+static complex<double> int_near_2(MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
+    return integrateGaus<MarkedTriangle const&, MarkedTriangle const&, double>(tx.t, &ker_near_2, tx, ty, k);
 }
 
+complex<double> intNear(MarkedTriangle const& tx, MarkedTriangle const& ty, double k) {
+    return int_near_1(tx, ty, k) + int_near_2(tx, ty, k) + int_near_2(ty, tx, k);
+}
 
 // (e_x(x), E_plr) e^{i k (v0, x)}
-complex<double> intF(const MarkedTriangle &t, double k, vec3 Eplr, vec3 v0) {
-    const array<Point, 4> &x = t.t.barCoords;
-    complex<double> ans = 0;
-    for (int i = 0; i < 4; ++i) {
-        ans += dot(e(t, x[i]), Eplr) * exp(complex(0., 1.) * k * dot(v0, vec3(x[i]))) * w[i];
-    }
-    ans *= t.t.S;
-    return ans;
+complex<double> kerF(Point const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
+    static complex<double> i(0., 1.);
+    return dot(e(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
+}
+
+complex<double> intF(MarkedTriangle const& t, double k, vec3 const& Eplr, vec3 const& v0){
+    return integrateGaus<MarkedTriangle const&, vec3 const&, vec3 const&, double>(t.t, &kerF, t, Eplr, v0, k);
 }
 
 complex<double> calcJ(const Grid &g, arma::cx_vec const& j, const pair<int, int> e1, int v){
@@ -283,8 +268,7 @@ complex<double> calcJ(const Grid &g, arma::cx_vec const& j, const pair<int, int>
     exit(1); // Сюда попадать не стоит
 }
 
-
-double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 tau){
+double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau){
     vec3c ans;
     for(auto &t: g.itriangles){
         pair<int, int> edges[3];
