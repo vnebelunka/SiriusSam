@@ -115,7 +115,6 @@ double Grid::diametr_grid() {
         double temp = max_edge(t);
         if(temp > ans) {
             ans = temp;
-            cout << t.iv1<<" " << t.iv2<<" " << t.iv3 << '\n';
         }
     }
     return ans;

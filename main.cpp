@@ -2,6 +2,9 @@
 #include <complex>
 #include <chrono>
 #include <armadillo>
+#include <sys/stat.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 #include "include/Grid.h"
 #include "include/Integrator.h"
@@ -19,6 +22,7 @@ complex<double> intEdge(const Grid &g, const pair<int, int>& e1, const pair<int,
 
 void calcMatrix(const Grid &g, double k, cx_mat& M){
     size_t n = g.edges.size();
+    size_t partition = n / 10;
     int i = 0, j;
     for(auto [e1, v1]: g.edges){
         j = 0;
@@ -26,8 +30,10 @@ void calcMatrix(const Grid &g, double k, cx_mat& M){
             M(i,j) = intEdge(g, e1, e2, v1, v2, k);
             ++j;
         }
+        if(i % partition == 0){
+            spdlog::info("{:3.0}%", double(100 * i) / n);
+        }
         ++i;
-        cout << i << '/' << n << '\n';
     }
 }
 
@@ -62,57 +68,64 @@ cx_vec calcF(const Grid &g, double k, vec3 Eplr, vec3 v0){
 }
 
 int main(int argc, char* argv[]){
+    spdlog::info("Welcome to spdlog!");
+    auto logger = spdlog::basic_logger_mt("basic_logger", "logs/log.txt");
     char *dname = argv[1];
     double k = atof(argv[2]);
+    logger->info("Input data: Filename = {}\nk = {}", dname, k);
+    spdlog::info("Parsing {} file", dname);
     Grid g(dname);
     g.read();
     g.get_unique_edges();
     g.getMarkedTriangles();
     size_t n = g.edges.size();
-    string s;
-    cin >> s;
-    if(s == "calc") {
-        ofstream outA("./calcs/matrix.txt");
-        cx_mat A(n, n);
-        calcMatrix(g, k, A);
-        for(int i = 0; i < n; ++i){
-            for(int j = 0; j < n; ++j){
-                outA << A(i, j) << " ";
-            }
-            outA << '\n';
+    double d = g.diametr_grid();
+    logger->info("Diameter of grid (max Edge length) = d = {}, lambda/d = {}\n", d, d / (2. * M_PI / k));
+    logger->info("Num of Triangles: {}, Num of Edges: {}", g.triangles.size(), g.edges.size());
+    spdlog::info("Starting calculation of Matrix coefficients");
+    ofstream outA("./logs/matrix.txt");
+    cx_mat A(n, n);
+    calcMatrix(g, k, A);
+    spdlog::info("Saving matrix");
+    for(int i = 0; i < n; ++i){
+        for(int j = 0; j < n; ++j){
+            outA << A(i, j) << " ";
         }
-        cx_vec f = calcF(g, k, {0, 1, 0}, {-1, 0, 0});
-        cout << "f ready" << endl;
-        ofstream outF("./calcs/f.txt");
-        for (int i = 0; i < n; ++i) {
+        outA << '\n';
+    }
+    spdlog::info("Starting calculation of right side");
+    cx_vec f = calcF(g, k, {0, 1, 0}, {-1, 0, 0});
+    ofstream outF("./logs/f.txt");
+    spdlog::info("Saving right side");
+    for (int i = 0; i < n; ++i) {
             outF << f(i) << '\n';
+    }
+    spdlog::info("Solving linear system");
+    cx_vec j = arma::solve(A, f);
+    spdlog::info("Saving system solution");
+    ofstream outJ("./logs/j.txt");
+    for(int i = 0; i < n; ++i){
+        outJ <<j(i) << '\n';
+    }
+    spdlog::info("Calculating Radar cross-section");
+    int parts = 360;
+    vector<double> sigma(parts), x(parts);
+    for(int i = 0; i < parts; ++i){
+        double alpha = M_PI * i / parts;
+        vec3 tau({cos(alpha), sin(alpha), 0});
+        sigma[i] = calcSigma(g, j, k, tau);
+        x[i] = i / 2.;
+        if(i % 72 == 0) {
+            spdlog::info("{:2}%", double(100 * i) / 360);
         }
-        cx_vec j = arma::solve(A, f);
-        ofstream outJ("./calcs/j.txt");
-        for(int i = 0; i < n; ++i){
-            outJ <<j(i) << '\n';
-        }
-        int parts = 360;
-        vector<double> sigma(parts), x(parts);
-        for(int i = 0; i < parts; ++i){
-            double alpha = M_PI * i / parts;
-            vec3 tau({cos(alpha), sin(alpha), 0});
-            sigma[i] = calcSigma(g, j, k, tau);
-            x[i] = i / 2.;
-            cout << i  << '/' << parts << '\n';
-        }
-        ofstream out("./calcs/sigma.txt");
-        for(int i = 0; i < parts; ++i){
-            out << x[i] << " ";
-        }
-        out << '\n';
-        for(int i = 0; i < parts; ++i){
-            out << sigma[i] << " ";
-        }
-    } else {
-        double d = g.diametr_grid();
-        cout << "diameter of grid = " << d << '\n';
-        cout << "lambda =" << 2. * M_PI / k <<  '\n';
-        cout << "d/lambda = " << d / (2. * M_PI / k) << '\n';
+    }
+    spdlog::info("Saving Radar cross-section at ./logs/sigma.txt");
+    ofstream out("./logs/sigma.txt");
+    for(int i = 0; i < parts; ++i){
+        out << x[i] << " ";
+    }
+    out << '\n';
+    for(int i = 0; i < parts; ++i){
+        out << sigma[i] << " ";
     }
 }
