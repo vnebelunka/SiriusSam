@@ -16,6 +16,9 @@ std::vector<Triangle> Grid::get_unique_tringles() {
 }
 
 void Grid::read() {
+
+
+
     data_file >> num_points;
     points.resize(num_points);
     for (int i = 0; i < num_points; ++i) {

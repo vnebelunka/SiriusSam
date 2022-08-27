@@ -190,7 +190,7 @@ double integral1Divr(const Triangle& t, const Point& a) {
 
 static inline
 vec3 e(MarkedTriangle const& t, Point const& x){
-    return (t.C - x) / t.t.S;
+    return (t.C - x) / t.S;
 }
 
 
@@ -203,7 +203,7 @@ static complex<double> kerFar(Point const&x, Point const&y, MarkedTriangle const
     static complex<double> i(0., 1.);
     complex<double> F = exp(i * k * r) / r;
     vec3 ex = e(tx, x), ey = e(ty, y);
-    return F * (k * k * dot(ex, ey) - 4 / (ty.t.S * tx.t.S));
+    return F * (k * k * dot(ex, ey) - 4 / (ty.S * tx.S));
 }
 
 complex<double> intFar(MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
@@ -226,18 +226,18 @@ static complex<double> ker_near_1(Point const& x, Point const& y, MarkedTriangle
 }
 
 static complex<double> int_near_1(const MarkedTriangle &tx, const MarkedTriangle &ty, double k){
-    return integrateGaus(tx, ty, &ker_near_1, k) / (tx.t.S * ty.t.S);
+    return integrateGaus(tx, ty, &ker_near_1, k) / (tx.S * ty.S);
 }
 
 static complex<double> ker_near_2(Point const& x, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
-    double integral_inner = integral1Divr(ty.t, x); // here /= tx.S
+    double integral_inner = integral1Divr(ty, x); // here /= tx.S
     double ker = (k * k / 2 * (dot(vec3(x), vec3(x - ty.C)) + dot(vec3(ty.C), vec3(tx.C - x))));
     ker -= 2;
-    return ker * integral_inner / (ty.t.S * tx.t.S);
+    return ker * integral_inner / (ty.S * tx.S);
 }
 
 static complex<double> int_near_2(MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
-    return integrateGaus<MarkedTriangle const&, MarkedTriangle const&, double>(tx.t, &ker_near_2, tx, ty, k);
+    return integrateGaus<MarkedTriangle const&, MarkedTriangle const&, double>(tx, &ker_near_2, tx, ty, k);
 }
 
 complex<double> intNear(MarkedTriangle const& tx, MarkedTriangle const& ty, double k) {
@@ -251,7 +251,7 @@ complex<double> kerF(Point const& x, MarkedTriangle const& t, vec3 const& Eplr, 
 }
 
 complex<double> intF(MarkedTriangle const& t, double k, vec3 const& Eplr, vec3 const& v0){
-    return integrateGaus<MarkedTriangle const&, vec3 const&, vec3 const&, double>(t.t, &kerF, t, Eplr, v0, k);
+    return integrateGaus<MarkedTriangle const&, vec3 const&, vec3 const&, double>(t, &kerF, t, Eplr, v0, k);
 }
 
 complex<double> calcJ(const Grid &g, arma::cx_vec const& j, const pair<int, int> e1, int v){

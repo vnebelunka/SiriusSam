@@ -114,20 +114,14 @@ struct iTriangle{
     iTriangle(int iv1, int iv2, int iv3) : iv1(iv1), iv2(iv2), iv3(iv3){}
 };
 
-
-//TODO: отнаследоваться
-struct MarkedTriangle{
-    const Triangle t;
+struct MarkedTriangle : Triangle{
     Point C;
-    MarkedTriangle(Point const& v1, Point const& v2, Point const& v3) : t(v1, v2, v3), C(v3){}
-    MarkedTriangle(const Triangle &otherT): t(otherT){C = otherT.c;}
+    MarkedTriangle(Point const& v1, Point const& v2, Point const& v3) : Triangle(v1, v2, v3), C(v3){}
+    MarkedTriangle(const Triangle &otherT): Triangle(otherT){C = otherT.c;}
 };
 
 vec3 operator+(const vec3 &lhs , const vec3 &rhs);
 
-vector<double> operator/(const vector<double> &lhs , const double div);
-
-vector<double>& operator*(vector<double> &ac , const double mult);
 
 vec3 operator*(const vec3 &ac, const double mult);
 

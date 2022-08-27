@@ -51,14 +51,6 @@ double dot(const vec3 &a, const vec3 &b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
-vector<double> operator*(const vector<double> &ac, const double mult) {
-    auto temp = ac;
-    for (auto &x: temp) {
-        x *= mult;
-    }
-    return temp;
-}
-
 vec3 operator*(const vec3 &ac, const double mult){
     auto temp = ac;
     for (auto &x: temp) {
@@ -71,13 +63,6 @@ vec3 operator/(const vec3 &lhs , const double div){
     return {lhs[0] / div, lhs[1] / div, lhs[2] / div};
 }
 
-vector<double> operator/(const vector<double> &lhs, const double div) {
-    auto temp = lhs;
-    for (auto &x: temp) {
-        x /= div;
-    }
-    return temp;
-}
 
 vec3 operator+(const vec3 &lhs, const vec3 &rhs) {
     vec3 res{lhs[0] + rhs[0], lhs[1] + rhs[1], lhs[2] + rhs[2]};
