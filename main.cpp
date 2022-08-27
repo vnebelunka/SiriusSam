@@ -82,7 +82,7 @@ int main(int argc, char* argv[]){
             outA << '\n';
         }
         cx_vec f = calcF(g, k, {0, 1, 0}, {-1, 0, 0});
-        cout << "f ready\n";
+        cout << "f ready" << endl;
         ofstream outF("./calcs/f.txt");
         for (int i = 0; i < n; ++i) {
             outF << f(i) << '\n';

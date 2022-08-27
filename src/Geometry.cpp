@@ -2,11 +2,10 @@
 #include <iostream>
 
 
-
 double area(const vec3 &a, const vec3 &b, const vec3 &c) {
     vec3 AB = b - a;
     vec3 AC = c - b;
-    auto n = cross(AB, AC);
+    vec3 n = cross(AB, AC);
     return 0.5 * norm(n);
 }
 
@@ -17,29 +16,28 @@ double area(const Triangle &t) {
 vec3 normal(const vec3 &a, const vec3 &b, const vec3 &c) {
     vec3 AB = b - a;
     vec3 AC = c - b;
-    auto n = cross(AB, AC);
-    auto modn = norm(n);
-    return n / modn;
+    vec3 n = cross(AB, AC);
+    return n / norm(n);
 }
 
-double norm(vec3 v) {
+double norm(const vec3 &v) {
     return sqrt(dot(v, v));
 }
 
 
-double normsqr(vec3c p){
+double normsqr(const array<complex<double>, 3> &p) {
     double ans = 0;
-    for(int i = 0; i < 3; ++i){
+    for (int i = 0; i < 3; ++i) {
         ans += (p[i] * conj(p[i])).real();
     }
     return ans;
 }
 
 double dist(const vec3 &x, const vec3 &y) {
-    return norm(vec3(x - y));
+    return norm(x - y);
 }
 
-vec3 cross(vec3 a, vec3 b) {
+vec3 cross(const vec3 &a, const vec3 &b) {
     return {a.y * b.z - a.z * b.y, b.x * a.z - a.x * b.z, a.x * b.y - a.y * b.x};
 }
 
@@ -49,26 +47,24 @@ double dot(const vec3 &a, const vec3 &b) {
 
 using vec3c = array<complex<double>, 3>;
 
-vec3c operator+(const vec3c& a,const vec3c& b){
+vec3c operator+(const vec3c &a, const vec3c &b) {
     return {a[0] + b[0], a[1] + b[1], a[2] + b[2]};
 }
 
-vec3c operator*(const vec3c& a, complex<double> mult){
+vec3c operator*(const vec3c &a, complex<double> mult) {
     return {a[0] * mult, a[1] * mult, a[2] * mult};
 }
 
-vec3c operator-(const vec3c& a,const vec3c& b){
+vec3c operator-(const vec3c &a, const vec3c &b) {
     return {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
 }
 
-vec3c operator+=(vec3c&a, const vec3c&other){
-    a[0] += other[0];
-    a[1] += other[1];
-    a[2] += other[2];
+vec3c operator+=(vec3c &a, const vec3c &other) {
+    a[0] += other[0], a[1] += other[1], a[2] += other[2];
     return a;
 }
 
-vec3c operator*(vec3 const &a, complex<double> mult){
+vec3c operator*(vec3 const &a, complex<double> mult) {
     return {a.x * mult, a.y * mult, a.z * mult};
 }
 
@@ -77,8 +73,18 @@ ostream &operator<<(ostream &os, const vec3 &p) {
     return os;
 }
 
+vec3 vec3::operator+=(const vec3 &other) {
+    x += other.x, y += other.y, z += other.z;
+    return *this;
+}
 
-complex<double> dot(vec3 const& a, const array<complex<double>, 3> &b) {
+vec3 vec3::operator-=(const vec3 &other) {
+    x -= other.x, y -= other.y, z -= other.z;
+    return *this;
+}
+
+
+complex<double> dot(vec3 const &a, const array<complex<double>, 3> &b) {
     return a.x * b[0] + a.y * b[1] + a.z * b[2];
 }
 
