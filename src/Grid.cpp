@@ -16,9 +16,6 @@ std::vector<Triangle> Grid::get_unique_tringles() {
 }
 
 void Grid::read() {
-
-
-
     data_file >> num_points;
     points.resize(num_points);
     for (int i = 0; i < num_points; ++i) {
@@ -81,8 +78,8 @@ Grid::Grid(const string &file_name) : data_file(file_name){
     }
 }
 
-std::array<Point, 3> Grid::get_points(iTriangle t) {
-    return {Point(points[t.iv1]), Point(points[t.iv2]), Point(points[t.iv3])};
+std::array<vec3, 3> Grid::get_points(iTriangle t) {
+    return {vec3(points[t.iv1]), vec3(points[t.iv2]), vec3(points[t.iv3])};
 }
 
 std::array<double, 3> Grid::get_point_coord(int i) {

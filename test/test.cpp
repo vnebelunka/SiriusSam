@@ -62,21 +62,21 @@ void test_integral_1d(){
     r.read();
     r.get_unique_edges();
     auto triangles = r.get_unique_tringles();
-    auto int1 = surfIntegral1D(triangles, [](Point const& p) -> complex<double> { return {1., 0}; });
+    auto int1 = surfIntegral1D(triangles, [](vec3 const& p) -> complex<double> { return {1., 0}; });
     cout << "Test1: f == 1: " << int1 << " as res; " << 4 * M_PI * 0.5 * 0.5 << " as true value.\n";
-    auto int2 = surfIntegral1D(triangles, [](Point const& p) -> complex<double> { return norm(p); });
+    auto int2 = surfIntegral1D(triangles, [](vec3 const& p) -> complex<double> { return norm(p); });
     cout << "Test2: f == r: " << int2 << " as res; " << 4 * M_PI * 0.5 * 0.5 * 0.5 << " as true value.\n";
-    auto int3 = surfIntegral1D(triangles, [](Point const& p) -> complex<double> { return p.x + p.y + abs(p.z); });
+    auto int3 = surfIntegral1D(triangles, [](vec3 const& p) -> complex<double> { return p.x + p.y + abs(p.z); });
     cout << "Test3: f = x + y + |z|: " << int3 << " as res; " << 2 * M_PI * 0.5 * 0.5 * 0.5 << " as true value.\n";
     auto int4 = surfIntegral1D(triangles,
-                               [](Point const& p) -> complex<double> {
-                                   Point x(1, 0, 0);
+                               [](vec3 const& p) -> complex<double> {
+                                   vec3 x(1, 0, 0);
                                    return 1. / dist(p, x);
                                });
     cout << "Test4: f = 1/|a-x|, a = (100, 0, 0): " << int4 << " as res; " << 4 * M_PI * 0.5 * 0.5  << " as true value.\n";
     auto int5 = surfIntegral1D(triangles,
-                               [](Point const& p) -> complex<double> {
-                                   Point x(0.1, 0.1, 0.1);
+                               [](vec3 const& p) -> complex<double> {
+                                   vec3 x(0.1, 0.1, 0.1);
                                    return 1. / dist(p, x);
                                });
     cout << "Test5: f = 1/|a-x|, a = (10, 10, 10): " << int5 << " as res; " << 4 * M_PI * 50 << " as true value.\n";

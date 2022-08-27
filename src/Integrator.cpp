@@ -2,10 +2,9 @@
 #include "../include/Integrator.h"
 #include <complex>
 
-using vec3 = std::array<double, 3>;
 
 
-complex<double> surfIntegral1D(const vector<Triangle> &grid, complex<double> f(Point const&)){
+complex<double> surfIntegral1D(const vector<Triangle> &grid, complex<double> f(vec3 const&)){
     complex<double> integral = 0;
     for(auto const& t: grid) {
         auto temp = integrateGaus(t, f);
@@ -29,7 +28,7 @@ static void rot(double &x, double &y, double cs, double sn) {
     x = tmp;
 }
 
-static double Integral1Divr_inv(std::array<vec3, 3> const& ABC, vec3 const& D){
+static double Integral1Divr_inv(std::array<std::array<double, 3>, 3> const& ABC, std::array<double, 3> const& D){
     double p0, l, l_pl, ratio, r, ad, proj;
     double n[3], edges[3][3], Q[3][2], DABC[7][3], c[3], s[3];
     int ed,  emn;
@@ -179,9 +178,9 @@ static double Integral1Divr_inv(std::array<vec3, 3> const& ABC, vec3 const& D){
     return int_1r;
 }
 
-double integral1Divr(const Triangle& t, const Point& a) {
-    std::array<vec3, 3> abc;
-    vec3 d({a.x, a.y, a.z});
+double integral1Divr(const Triangle& t, const vec3& a) {
+    std::array<std::array<double, 3>, 3> abc;
+    std::array<double, 3> d({a.x, a.y, a.z});
     abc[0][0] = t.a.x, abc[0][1] = t.b.x, abc[0][2] = t.c.x;
     abc[1][0] = t.a.y, abc[1][1] = t.b.y, abc[1][2] = t.c.y;
     abc[2][0] = t.a.z, abc[2][1] = t.b.z, abc[2][2] = t.c.z;
@@ -189,7 +188,7 @@ double integral1Divr(const Triangle& t, const Point& a) {
 }
 
 static inline
-vec3 e(MarkedTriangle const& t, Point const& x){
+vec3 e(MarkedTriangle const& t, vec3 const& x){
     return (t.C - x) / t.S;
 }
 
@@ -198,7 +197,7 @@ vec3 e(MarkedTriangle const& t, Point const& x){
  *  e^(ikr) [k^2 * (ex, ey) - 4 /(S.x * S.y)] / r
  */
 
-static complex<double> kerFar(Point const&x, Point const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
+static complex<double> kerFar(vec3 const&x, vec3 const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double r = dist(x, y);
     static complex<double> i(0., 1.);
     complex<double> F = exp(i * k * r) / r;
@@ -213,7 +212,7 @@ complex<double> intFar(MarkedTriangle const& tx, MarkedTriangle const& ty, doubl
 /*
  * [[k^2 (Cx - x, Cy - y) - 4] e^{ikr - 1} / r ] - k^2 / r dy dx
  */
-static complex<double> ker_near_1(Point const& x, Point const& y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
+static complex<double> ker_near_1(vec3 const& x, vec3 const& y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double r = dist(x, y);
     static const complex<double> i(0, 1);
     complex<double> F;
@@ -229,7 +228,7 @@ static complex<double> int_near_1(const MarkedTriangle &tx, const MarkedTriangle
     return integrateGaus(tx, ty, &ker_near_1, k) / (tx.S * ty.S);
 }
 
-static complex<double> ker_near_2(Point const& x, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
+static complex<double> ker_near_2(vec3 const& x, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double integral_inner = integral1Divr(ty, x); // here /= tx.S
     double ker = (k * k / 2 * (dot(vec3(x), vec3(x - ty.C)) + dot(vec3(ty.C), vec3(tx.C - x))));
     ker -= 2;
@@ -245,7 +244,7 @@ complex<double> intNear(MarkedTriangle const& tx, MarkedTriangle const& ty, doub
 }
 
 // (e_x(x), E_plr) e^{i k (v0, x)}
-complex<double> kerF(Point const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
+complex<double> kerF(vec3 const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
     static complex<double> i(0., 1.);
     return dot(e(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
 }
@@ -280,7 +279,7 @@ double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau
         Triangle sigmai (g.points[t.iv1], g.points[t.iv2], g.points[t.iv3]);
         vec3c intSigma;
 
-        const array<Point, 4> &x = sigmai.barCoords;
+        const array<vec3, 4> &x = sigmai.barCoords;
         for(int i = 0; i < 4; ++i){
             vec3c g = (sigmai.c - x[i]) * coeffs[0] + (sigmai.a - x[i]) * coeffs[1] + (sigmai.b - x[i]) * coeffs[2];
             g = g * (1. / sigmai.S);
