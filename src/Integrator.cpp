@@ -187,6 +187,8 @@ double integral1Divr(const Triangle& t, const vec3& a) {
     return Integral1Divr_inv(abc, d);
 }
 
+
+
 static inline
 vec3 e(MarkedTriangle const& t, vec3 const& x){
     return (t.C - x) / t.S;
@@ -197,7 +199,9 @@ vec3 e(MarkedTriangle const& t, vec3 const& x){
  *  e^(ikr) [k^2 * (ex, ey) - 4 /(S.x * S.y)] / r
  */
 
-static complex<double> kerFar(vec3 const&x, vec3 const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
+
+static inline
+complex<double> kerFar(vec3 const&x, vec3 const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double r = dist(x, y);
     static complex<double> i(0., 1.);
     complex<double> F = exp(i * k * r) / r;

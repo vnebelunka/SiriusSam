@@ -1,3 +1,8 @@
+/**
+ * \file
+ * Source file for geometry operations
+ */
+
 #include "../include/Geometry.h"
 #include <iostream>
 
