@@ -6,8 +6,8 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
-#include "include/Grid.h"
-#include "include/Integrator.h"
+#include "Grid.h"
+#include "Integrator.h"
 //#include "matplot/matplot.h"
 
 //TODO: сделать namespace
@@ -83,30 +83,19 @@ int main(int argc, char* argv[]){
     logger->info("Diameter of grid (max Edge length) = d = {}, lambda/d = {}\n", d, d / (2. * M_PI / k));
     logger->info("Num of Triangles: {}, Num of Edges: {}", g.triangles.size(), g.edges.size());
     spdlog::info("Starting calculation of Matrix coefficients");
-    ofstream outA("./logs/matrix.txt");
     cx_mat A(n, n);
     calcMatrix(g, k, A);
     spdlog::info("Saving matrix");
-    for(int i = 0; i < n; ++i){
-        for(int j = 0; j < n; ++j){
-            outA << A(i, j) << " ";
-        }
-        outA << '\n';
-    }
+    A.save("./logs/matrix.txt", arma::arma_ascii);
     spdlog::info("Starting calculation of right side");
     cx_vec f = calcF(g, k, {0, 1, 0}, {-1, 0, 0});
-    ofstream outF("./logs/f.txt");
     spdlog::info("Saving right side");
-    for (int i = 0; i < n; ++i) {
-            outF << f(i) << '\n';
-    }
+    f.save("./logs/f.txt", arma::arma_ascii);
     spdlog::info("Solving linear system");
-    cx_vec j = arma::solve(A, f);
+    cx_vec j;
+    arma::solve(j, A, f);
     spdlog::info("Saving system solution");
-    ofstream outJ("./logs/j.txt");
-    for(int i = 0; i < n; ++i){
-        outJ <<j(i) << '\n';
-    }
+    j.save("./logs/j.txt", arma::arma_ascii);
     spdlog::info("Calculating Radar cross-section");
     int parts = 360;
     vector<double> sigma(parts), x(parts);
