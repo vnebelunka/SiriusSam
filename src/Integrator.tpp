@@ -3,8 +3,8 @@
 static const std::array<double, 4> w ({-9./16, 25./48, 25./48, 25./48});
 
 template<typename ... Args>
-complex<double> integrateGaus(MarkedTriangle const& tx, MarkedTriangle const& ty,
-                              complex<double> (*f)(vec3 const&x, vec3 const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, Args...), Args... args){
+complex<double> integrateGauss(MarkedTriangle const& tx, MarkedTriangle const& ty,
+                               complex<double> (*f)(vec3 const&x, vec3 const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, Args...), Args... args){
     const array<vec3, 4> x = tx.barCoords, y = ty.barCoords;
     complex<double> ans = 0;
     for(int i = 0; i < 4; ++i){
@@ -18,7 +18,7 @@ complex<double> integrateGaus(MarkedTriangle const& tx, MarkedTriangle const& ty
 }
 
 template<typename ... Args>
-complex<double> integrateGaus(Triangle const& t, complex<double> (*f)(vec3 const& x, Args... args), Args... args) {
+complex<double> integrateGauss(Triangle const& t, complex<double> (*f)(vec3 const& x, Args... args), Args... args) {
     const array<vec3, 4> &x = t.barCoords;
     complex<double> ans = 0;
     for(int i = 0; i < 4; ++i){

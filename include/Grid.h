@@ -55,7 +55,7 @@ struct Grid{
     }
 
 
-    //TODO: переписать на функцию от 4 треугольников: они уже найдены в calcMatrix
+    //TODO: переписать на функцию от 4 треугольников: они уже найдены в calcMatrixM
     bool check_dist(pair<int, int> p1, pair<int, int> p2) const;
 
     double diametr_grid();
