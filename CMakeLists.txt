@@ -15,7 +15,7 @@ include_directories(${ARMADILLO_INCLUDE_DIRS})
 set(GCC_COVERAGE_COMPILE_FLAGS "-O2 -larmadillo")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
-add_executable(Sirius main.cpp include/Grid.h test/test.cpp include/Geometry.h src/Geometry.cpp include/Integrator.h src/Integrator.cpp src/Grid.cpp src/Integrator.tpp include/Magnetic.h src/Magnetic/Magnetic.cpp src/Magnetic/Electric.cpp src/Magnetic/Electric.h)
+add_executable(Sirius main.cpp include/Grid.h test/test.cpp include/Geometry.h src/Geometry.cpp include/Integrator.h src/Integrator.cpp src/Grid.cpp src/Integrator.tpp include/Magnetic.h src/Magnetic/Magnetic.cpp src/Magnetic/Electric.cpp include/Electric.h)
 
 target_include_directories(Sirius PRIVATE include)
 target_link_libraries(Sirius PRIVATE spdlog::spdlog ${ARMADILLO_LIBRARIES})

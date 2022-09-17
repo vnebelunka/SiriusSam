@@ -7,6 +7,7 @@
 #include "Grid.h"
 #include "Integrator.h"
 #include "Magnetic.h"
+#include "Electric.h"
 //#include "matplot/matplot.h"
 
 //TODO: сделать namespace
@@ -30,11 +31,11 @@ int main(int argc, char* argv[]){
     logger->info("Num of Triangles: {}, Num of Edges: {}", g.triangles.size(), g.edges.size());
     spdlog::info("Starting calculation of Matrix coefficients");
     cx_mat A(n, n);
-    calcMatrixM(g, k, A);
+    calcMatrixE(g, k, A);
     spdlog::info("Saving matrix");
     A.save("./logs/matrix.txt", arma::arma_ascii);
     spdlog::info("Starting calculation of right side");
-    cx_vec f = calcFM(g, k, {0, 1, 0}, {-1, 0, 0});
+    cx_vec f = calcFE(g, k, {0, 1, 0}, {-1, 0, 0});
     spdlog::info("Saving right side");
     f.save("./logs/f.txt", arma::arma_ascii);
     spdlog::info("Solving linear system");

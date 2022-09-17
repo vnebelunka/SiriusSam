@@ -212,21 +212,25 @@ static complex<double> ker_near_1(vec3 const& x, vec3 const& y, MarkedTriangle c
     return F * (k * k * dot(vec3(tx.C - x), vec3(ty.C - y)) - 4.) - k * k / 2. * r;
 }
 
-static complex<double> int_near_1(const MarkedTriangle &tx, const MarkedTriangle &ty, double k){
+static inline
+complex<double> int_near_1(const MarkedTriangle &tx, const MarkedTriangle &ty, double k){
     return integrateGauss(tx, ty, &ker_near_1, k) / (tx.S * ty.S);
 }
 
-static complex<double> ker_near_2(vec3 const& x, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
+static
+complex<double> ker_near_2(vec3 const& x, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double integral_inner = integral1Divr(ty, x); // here /= tx.S
     double ker = (k * k / 2 * (dot(vec3(x), vec3(x - ty.C)) + dot(vec3(ty.C), vec3(tx.C - x))));
     ker -= 2;
     return ker * integral_inner / (ty.S * tx.S);
 }
 
-static complex<double> int_near_2(MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
+static
+complex<double> int_near_2(MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     return integrateGauss<MarkedTriangle const &, MarkedTriangle const &, double>(tx, &ker_near_2, tx, ty, k);
 }
 
+static inline
 complex<double> intNearM(const MarkedTriangle &tx, MarkedTriangle const& ty, double k) {
     return int_near_1(tx, ty, k) + int_near_2(tx, ty, k) + int_near_2(ty, tx, k);
 }
@@ -237,13 +241,14 @@ static complex<double> kerF(vec3 const& x, MarkedTriangle const& t, vec3 const& 
     return dot(e(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
 }
 
-complex<double> intFM(MarkedTriangle const& t, double k, vec3 const& Eplr, vec3 const& v0){
+static
+complex<double> intF(MarkedTriangle const& t, double k, vec3 const& Eplr, vec3 const& v0){
     return integrateGauss<MarkedTriangle const &, vec3 const &, vec3 const &, double>(t, &kerF, t, Eplr, v0, k);
 }
 
-
-complex<double> intEdgeM(const Grid &g, const pair<int, int> &e1, const pair<int, int> &e2, const pair<int, int> &v1,
-                         const pair<int, int> &v2, double k) {
+static
+complex<double> intEdge(const Grid &g, const pair<int, int> &e1, const pair<int, int> &e2, const pair<int, int> &v1,
+                        const pair<int, int> &v2, double k) {
     MarkedTriangle txPlus(g.triangles.find({e1.first, e1.second, v1.first})->second);
     MarkedTriangle txMinus(g.triangles.find({e1.first, e1.second, v1.second})->second);
     MarkedTriangle tyPlus(g.triangles.find({e2.first, e2.second, v2.first})->second);
@@ -261,13 +266,11 @@ complex<double> intEdgeM(const Grid &g, const pair<int, int> &e1, const pair<int
 
 
 void calcMatrixM(const Grid &g, double k, cx_mat &M) {
-    size_t n = g.edges.size();
-    size_t partition = n / 10;
     int i = 0, j;
     for(auto [e1, v1]: g.edges){
         j = 0;
         for(auto [e2, v2]: g.edges){
-            M(i,j) = intEdgeM(g, e1, e2, v1, v2, k);
+            M(i,j) = intEdge(g, e1, e2, v1, v2, k);
             ++j;
         }
         ++i;
@@ -280,7 +283,7 @@ cx_vec calcFM(const Grid &g, double k, vec3 Eplr, vec3 v0) {
     for(auto [e, v]: g.edges){
         MarkedTriangle tPlus(g.points[e.first], g.points[e.second], g.points[v.first]);
         MarkedTriangle tMinus(g.points[e.first], g.points[e.second], g.points[v.second]);
-        auto temp = intFM(tPlus, k, Eplr, v0) - intFM(tMinus, k, Eplr, v0);
+        auto temp = intF(tPlus, k, Eplr, v0) - intF(tMinus, k, Eplr, v0);
         f[i] = temp;
         ++i;
     }

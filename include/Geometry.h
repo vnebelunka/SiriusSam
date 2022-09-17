@@ -33,6 +33,16 @@ struct vec3 {
 
     friend ostream& operator<<(ostream& os, const vec3& p);
 
+    bool operator ==(const vec3& other) const{return x == other.x && y == other.y && z == other.z;}
+    bool operator <(const vec3& other) const{
+        if(x < other.x) {return true;}
+        if(x > other.x) {return false;}
+        if(y < other.y) {return true;}
+        if(y > other.y) {return false;}
+        if(z < other.z) {return true;}
+        if(z > other.z) {return false;}
+        return false;
+    }
     /*
      * Arithmetic operations
      */
@@ -109,11 +119,15 @@ struct Triangle{
     vec3 a, b, c; ///< Points of triangle
     double S; ///< area of Triangle
     array<vec3, 4> barCoords; ///< Barycentric coordinates
-    Triangle(const vec3& a, const vec3& b, const vec3& c) : a(a), b(b), c(c){
+    Triangle(const vec3& a, const vec3& b, const vec3& c){
+        array<vec3, 3> arr({a, b, c});
+        sort(arr.begin(), arr.end());
+        this->a = arr[0], this->b = arr[1], this->c = arr[2];
         S = area(a,b,c);
         barCoords = calcBarCoords(a, b, c);
     }
     Triangle& operator=(const Triangle& other) = default;
+    bool operator==(Triangle const &other) const{return a == other.a && b == other.b && c == other.c;}
 };
 
 /**
@@ -131,6 +145,9 @@ struct MarkedTriangle : Triangle{
     vec3 C; ///< Marked point of triangle
     MarkedTriangle(vec3 const& v1, vec3 const& v2, vec3 const& v3) : Triangle(v1, v2, v3), C(v3){}
     MarkedTriangle(const Triangle &otherT): Triangle(otherT){C = otherT.c;}
+    bool operator == (const MarkedTriangle &otherT) const{
+        return Triangle(*this) == Triangle(otherT);
+    } //TODO: можно лучше.
 };
 
 
@@ -204,5 +221,10 @@ vec3c operator*(const vec3c& a, complex<double> mult);
 vec3c operator*(vec3 const& a, complex<double> mult);
 
 vec3c operator+=(vec3c&a, const vec3c&other);
+
+
+complex<double> cdot(vec3c const &a, vec3 const &b);
+
+vec3c cross(vec3c const&a, vec3 const &b);
 
 #endif //SIRIUS_GEOMETRY_H

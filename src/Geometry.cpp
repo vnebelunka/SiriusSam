@@ -93,6 +93,15 @@ complex<double> dot(vec3 const &a, const array<complex<double>, 3> &b) {
     return a.x * b[0] + a.y * b[1] + a.z * b[2];
 }
 
+complex<double> cdot(vec3c const &a, vec3 const &b){
+    return a[0] * b.x + a[1] * b.y + a[2] * b.z;
+}
+
+vec3c cross(vec3c const &a, vec3 const &b){
+    return {a[1] * b.z - a[2] * b.y, a[1] * b.x - a[0] * b.y, a[0] * b.z - a[2] * b.x};
+}
+
+
 std::array<vec3, 4> calcBarCoords(const vec3 &a, const vec3 &b, const vec3 &c) {
     std::array<vec3, 4> b_coords;
     b_coords[0] = a / 3. + b / 3. + c / 3.;
