@@ -6,8 +6,8 @@ static
 vec3c gradF(vec3 const& x, vec3 const& y, const double k){
     static complex<double> i = complex<double>(0, 1);
     double r = dist(x, y);
-    complex<double> mult = exp(i * k * r) * (i * k * r - 1.) / (r * r *r);
-    return (x - y) * (mult / (4 * M_PI));
+    complex<double> mult = exp(i * k * r) * (i * k * r - 1.) / (r * r);
+    return (x - y) * (mult / (4 * M_PI * r));
 }
 
 static
@@ -27,7 +27,7 @@ complex<double> intOperator(MarkedTriangle const& tx, MarkedTriangle const& ty, 
 
 static
 complex<double> ker2(vec3 const &x, vec3 const &y, MarkedTriangle const &tx, MarkedTriangle const &ty){
-    return dot(en(tx, x), en(ty, y));
+    return -0.5 * dot(e(tx, x), e(ty, y));
 }
 
 complex<double> int2(MarkedTriangle const& tx, MarkedTriangle const& ty){
@@ -41,23 +41,22 @@ complex<double> intEdge(const Grid &g, const pair<int, int> &e1, const pair<int,
     MarkedTriangle txMinus(g.triangles.find({e1.first, e1.second, v1.second})->second);
     MarkedTriangle tyPlus(g.triangles.find({e2.first, e2.second, v2.first})->second);
     MarkedTriangle tyMinus(g.triangles.find({e2.first, e2.second, v2.second})->second);
-    complex<double> ans = intOperator(txPlus, tyPlus, k);
-    ans += intOperator(txMinus, tyMinus, k);
-    ans -= intOperator(txMinus, tyPlus, k) + intOperator(txPlus, tyMinus, k);
+    //complex<double> ans = intOperator(txPlus, tyPlus, k) + intOperator(txMinus, tyMinus, k);
+    //ans -= intOperator(txMinus, tyPlus, k) + intOperator(txPlus, tyMinus, k);
     complex<double> ans2;
     if(txPlus == tyPlus){
-        ans2 -= 0.5 * int2(txPlus, tyPlus);
+        ans2 += int2(txPlus, tyPlus);
     }
     if(txPlus == tyMinus){
-        ans2 += 0.5 * int2(txPlus, tyMinus);
+        ans2 -= int2(txPlus, tyMinus);
     }
     if(txMinus == tyPlus){
-        ans2 += 0.5 * int2(txMinus, tyPlus);
+        ans2 -= int2(txMinus, tyPlus);
     }
     if(txMinus == tyMinus){
-        ans2 -= 0.5 * int2(txMinus, tyMinus);
+        ans2 += int2(txMinus, tyMinus);
     }
-    return ans2 + ans;
+    return ans2;// + ans;
 }
 
 void calcMatrixE(const Grid &g, double k, cx_mat &M) {
@@ -73,7 +72,7 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
     }
 }
 
-// (e_x(x), E_plr) e^{i k (v0, x)}
+// (en_x(x), E_plr) e^{i k (v0, x)}
 static
 complex<double> kerF(vec3 const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
     static complex<double> i(0., 1.);

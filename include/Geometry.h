@@ -146,7 +146,7 @@ struct MarkedTriangle : Triangle{
     MarkedTriangle(vec3 const& v1, vec3 const& v2, vec3 const& v3) : Triangle(v1, v2, v3), C(v3){}
     MarkedTriangle(const Triangle &otherT): Triangle(otherT){C = otherT.c;}
     bool operator == (const MarkedTriangle &otherT) const{
-        return Triangle(*this) == Triangle(otherT);
+        return this->a == otherT.a && this->b == otherT.b && this->c == otherT.C;
     } //TODO: можно лучше.
 };
 
