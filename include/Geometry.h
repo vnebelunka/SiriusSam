@@ -119,15 +119,18 @@ struct Triangle{
     vec3 a, b, c; ///< Points of triangle
     double S; ///< area of Triangle
     array<vec3, 4> barCoords; ///< Barycentric coordinates
-    Triangle(const vec3& a, const vec3& b, const vec3& c){
-        array<vec3, 3> arr({a, b, c});
-        sort(arr.begin(), arr.end());
-        this->a = arr[0], this->b = arr[1], this->c = arr[2];
+    Triangle(const vec3& a, const vec3& b, const vec3& c): a(a), b(b), c(c){
         S = area(a,b,c);
         barCoords = calcBarCoords(a, b, c);
     }
     Triangle& operator=(const Triangle& other) = default;
-    bool operator==(Triangle const &other) const{return a == other.a && b == other.b && c == other.c;}
+    bool operator==(Triangle const &other) const{
+        std::array<vec3, 3> p1({a, b, c});
+        std::array<vec3, 3> p2({other.a, other.b, other.c});
+        sort(p1.begin(), p1.end());
+        sort(p2.begin(), p2.end());
+        return p1[0] == p2[0] && p1[1] == p2[1] && p1[2] == p2[2];
+    }
 };
 
 /**
@@ -142,11 +145,15 @@ struct iTriangle{
  * \brief Triangle with 1 marked point for RWG function
  */
 struct MarkedTriangle : Triangle{
-    vec3 C; ///< Marked point of triangle
-    MarkedTriangle(vec3 const& v1, vec3 const& v2, vec3 const& v3) : Triangle(v1, v2, v3), C(v3){}
-    MarkedTriangle(const Triangle &otherT): Triangle(otherT){C = otherT.c;}
+    vec3 marked; ///< Marked point of triangle
+    MarkedTriangle(vec3 const& v1, vec3 const& v2, vec3 const& v3) : Triangle(v1, v2, v3), marked(v3){}
+    MarkedTriangle(const Triangle &otherT): Triangle(otherT){ marked = otherT.c;}
     bool operator == (const MarkedTriangle &otherT) const{
-        return this->a == otherT.a && this->b == otherT.b && this->c == otherT.C;
+        std::array<vec3, 3> p1({a, b, c});
+        std::array<vec3, 3> p2({otherT.a, otherT.b, otherT.c});
+        sort(p1.begin(), p1.end());
+        sort(p2.begin(), p2.end());
+        return p1[0] == p2[0] && p1[1] == p2[1] && p1[2] == p2[2];
     } //TODO: можно лучше.
 };
 
@@ -189,6 +196,9 @@ double normsqr(const array<complex<double>, 3> &p);
  * @return normal vector \f$ n \perp abc \f$
  */
 vec3 normal(const vec3 &a, const vec3 &b, const vec3 &c);
+
+vec3 normal(const Triangle &t);
+
 
 /**
  * area of triangle

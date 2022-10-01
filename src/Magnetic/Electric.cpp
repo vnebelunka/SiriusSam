@@ -1,6 +1,6 @@
 #include "Electric.h"
 #include "armadillo"
-
+#include <cassert>
 
 static
 vec3c gradF(vec3 const& x, vec3 const& y, const double k){
@@ -56,6 +56,7 @@ complex<double> intEdge(const Grid &g, const pair<int, int> &e1, const pair<int,
     if(txMinus == tyMinus){
         ans2 += int2(txMinus, tyMinus);
     }
+
     return ans2;// + ans;
 }
 
@@ -76,7 +77,7 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
 static
 complex<double> kerF(vec3 const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
     static complex<double> i(0., 1.);
-    return dot(en(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
+    return dot(e(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
 }
 
 static inline

@@ -209,7 +209,7 @@ static complex<double> ker_near_1(vec3 const& x, vec3 const& y, MarkedTriangle c
     } else {
         F = (exp(i * k * r) - complex(1., 0.)) / r;
     }
-    return F * (k * k * dot(vec3(tx.C - x), vec3(ty.C - y)) - 4.) - k * k / 2. * r;
+    return F * (k * k * dot(vec3(tx.marked - x), vec3(ty.marked - y)) - 4.) - k * k / 2. * r;
 }
 
 static inline
@@ -220,7 +220,7 @@ complex<double> int_near_1(const MarkedTriangle &tx, const MarkedTriangle &ty, d
 static
 complex<double> ker_near_2(vec3 const& x, MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     double integral_inner = integral1Divr(ty, x); // here /= tx.S
-    double ker = (k * k / 2 * (dot(vec3(x), vec3(x - ty.C)) + dot(vec3(ty.C), vec3(tx.C - x))));
+    double ker = (k * k / 2 * (dot(vec3(x), vec3(x - ty.marked)) + dot(vec3(ty.marked), vec3(tx.marked - x))));
     ker -= 2;
     return ker * integral_inner / (ty.S * tx.S);
 }

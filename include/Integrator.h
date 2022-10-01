@@ -56,7 +56,7 @@ void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, 
 
 inline
 vec3 e(MarkedTriangle const& t, vec3 const& x){
-    return (t.C - x) / t.S;
+    return (t.marked - x) / t.S;
 }
 
 inline

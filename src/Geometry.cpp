@@ -25,6 +25,10 @@ vec3 normal(const vec3 &a, const vec3 &b, const vec3 &c) {
     return n / norm(n);
 }
 
+vec3 normal(const Triangle &t){
+    return normal(t.a, t.b, t.c);
+}
+
 double norm(const vec3 &v) {
     return sqrt(dot(v, v));
 }
