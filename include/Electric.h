@@ -14,6 +14,6 @@ using arma::cx_vec;
 
 void calcMatrixE(const Grid &g, double k, cx_mat &M);
 
-cx_vec calcFE(const Grid &g, double k, vec3 Eplr, vec3 v0);
+void calcFE(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec &f);
 
 #endif //SIRIUS_ELECTRIC_H

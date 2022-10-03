@@ -25,7 +25,8 @@ int main(int argc, char* argv[]){
     g.read();
     g.get_unique_edges();
     g.getMarkedTriangles();
-    size_t n = g.edges.size();
+    g.enum_inner_edges();
+    size_t n = g.edges_inner_enum.size();
     double d = g.diametr_grid();
     logger->info("Diameter of grid (max Edge length) = d = {}, lambda/d = {}\n", d, d / (2. * M_PI / k));
     logger->info("Num of Triangles: {}, Num of Edges: {}", g.triangles.size(), g.edges.size());
@@ -35,7 +36,8 @@ int main(int argc, char* argv[]){
     spdlog::info("Saving matrix");
     A.save("./logs/matrix.txt", arma::arma_ascii);
     spdlog::info("Starting calculation of right side");
-    cx_vec f = calcFE(g, k, {0, 1, 0}, {-1, 0, 0});
+    cx_vec f(n);
+    calcFE(g, k, {0, 1, 0}, {-1, 0, 0}, f);
     spdlog::info("Saving right side");
     f.save("./logs/f.txt", arma::arma_ascii);
     spdlog::info("Solving linear system");

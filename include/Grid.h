@@ -22,6 +22,7 @@ struct Grid{
 
     std::map<std::pair<int, int>, std::pair<int, int>> edges;
     std::map<std::tuple<int, int, int>, Triangle> triangles = {};
+    std::map<std::pair<int,int>, int> edges_inner_enum;
 
     Grid(const char *file_name);
 
@@ -54,6 +55,14 @@ struct Grid{
         return max(d1, max(d2, d3));
     }
 
+    void enum_inner_edges(){
+        int i = 0;
+        for(auto [e, v]: edges){
+            if(v.second != -1){
+                edges_inner_enum[e] = i++;
+            }
+        }
+    }
 
     //TODO: переписать на функцию от 4 треугольников: они уже найдены в calcMatrixM
     bool check_dist(pair<int, int> p1, pair<int, int> p2) const;

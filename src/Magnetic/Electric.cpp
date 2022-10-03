@@ -25,13 +25,19 @@ complex<double> intOperator(MarkedTriangle const& tx, MarkedTriangle const& ty, 
     return integrateGauss(tx, ty, &ker_operator, k);
 }
 
-static
-complex<double> ker2(vec3 const &x, vec3 const &y, MarkedTriangle const &tx, MarkedTriangle const &ty){
-    return -0.5 * dot(e(tx, x), e(ty, y));
-}
+/*static
+complex<double> ker2(vec3 const &x, MarkedTriangle const &tx){
+    return dot(e(tx, x), e(ty, y));
+}*/
 
 complex<double> int2(MarkedTriangle const& tx, MarkedTriangle const& ty){
-    return integrateGauss(tx, ty, &ker2);
+    const array<vec3, 4> &x = tx.barCoords;
+    complex<double> ans = 0;
+    for(int i = 0; i < 4; ++i){
+        ans += dot(e(tx, x[i]), e(ty, x[i])) * w[i];
+    }
+    ans *= tx.S;
+    return ans;
 }
 
 static
@@ -64,7 +70,13 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
     int i = 0, j;
     for(auto [e1, v1]: g.edges){
         j = 0;
+        if(v1.second == -1){
+            continue;
+        }
         for(auto [e2, v2]: g.edges){
+            if(v2.second == -1){
+                continue;
+            }
             complex<double> temp = intEdge(g, e1, e2, v1, v2, k);
             M(i,j) = temp;
             ++j;
@@ -85,15 +97,16 @@ complex<double> intF(MarkedTriangle const& t, double k, vec3 const& Eplr, vec3 c
     return integrateGauss<MarkedTriangle const &, vec3 const &, vec3 const &, double>(t, &kerF, t, Eplr, v0, k);
 }
 
-cx_vec calcFE(const Grid &g, double k, vec3 Eplr, vec3 v0) {
-    cx_vec f(g.edges.size());
+void calcFE(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec &f) {
     int i = 0;
     for(auto [e, v]: g.edges){
+        if(v.second == -1){
+            continue;
+        }
         MarkedTriangle tPlus(g.points[e.first], g.points[e.second], g.points[v.first]);
         MarkedTriangle tMinus(g.points[e.first], g.points[e.second], g.points[v.second]);
         auto temp = intF(tPlus, k, Eplr, v0) - intF(tMinus, k, Eplr, v0);
         f[i] = temp;
         ++i;
     }
-    return f;
 }

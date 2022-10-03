@@ -17,8 +17,11 @@ complex<double> surfIntegral1D(const vector<Triangle> &grid, complex<double> f(v
 complex<double> calcJ(const Grid &g, arma::cx_vec const& j, const pair<int, int> e1, int v){
     pair<int, int> p = {min(e1.first, e1.second), max(e1.first, e1.second)};
     auto it = g.edges.find(p);
-    size_t i = std::distance( g.edges.begin(), it);
+    size_t i = g.edges_inner_enum.find(p)->second;
     auto vertices = it->second;
+    if(vertices.second == -1){
+        return 0;
+    }
     if(vertices.first == v){
         return j[i];
     }
