@@ -49,8 +49,8 @@ complex<double> intEdge(const Grid &g, const pair<int, int> &e1, const pair<int,
     MarkedTriangle txMinus(g.triangles.find({e1.first, e1.second, v1.second})->second);
     MarkedTriangle tyPlus(g.triangles.find({e2.first, e2.second, v2.first})->second);
     MarkedTriangle tyMinus(g.triangles.find({e2.first, e2.second, v2.second})->second);
-    //complex<double> ans = intOperator(txPlus, tyPlus, k) + intOperator(txMinus, tyMinus, k);
-    //ans -= intOperator(txMinus, tyPlus, k) + intOperator(txPlus, tyMinus, k);
+    complex<double> ans = intOperator(txPlus, tyPlus, k) + intOperator(txMinus, tyMinus, k);
+    ans -= intOperator(txMinus, tyPlus, k) + intOperator(txPlus, tyMinus, k);
     complex<double> ans2;
     if(txPlus == tyPlus){
         ans2 += int2(txPlus, tyPlus);
@@ -65,7 +65,7 @@ complex<double> intEdge(const Grid &g, const pair<int, int> &e1, const pair<int,
         ans2 += int2(txMinus, tyMinus);
     }
 
-    return ans2;// + ans;
+    return ans2 + ans;
 }
 
 void calcMatrixE(const Grid &g, double k, cx_mat &M) {
