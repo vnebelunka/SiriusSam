@@ -8,6 +8,7 @@
 #include "Integrator.h"
 #include "Magnetic.h"
 #include "Electric.h"
+#include "progressbar.h"
 //#include "matplot/matplot.h"
 
 //TODO: сделать namespace
@@ -32,12 +33,12 @@ int main(int argc, char* argv[]){
     logger->info("Num of Triangles: {}, Num of Edges: {}", g.triangles.size(), g.edges.size());
     spdlog::info("Starting calculation of Matrix coefficients");
     cx_mat A(n, n);
-    calcMatrixE(g, k, A);
+    calcMatrixM(g, k, A);
     spdlog::info("Saving matrix");
     A.save("./logs/matrix.txt", arma::arma_ascii);
     spdlog::info("Starting calculation of right side");
     cx_vec f(n);
-    calcFE(g, k, {0, 1, 0}, {-1, 0, 0}, f);
+    calcFM(g, k, {0, 1, 0}, {-1, 0, 0}, f);
     spdlog::info("Saving right side");
     f.save("./logs/f.txt", arma::arma_ascii);
     spdlog::info("Solving linear system");
@@ -46,6 +47,7 @@ int main(int argc, char* argv[]){
     spdlog::info("Saving system solution");
     j.save("./logs/j.txt", arma::arma_ascii);
     spdlog::info("Calculating Radar cross-section");
+    progressbar p(360);
     int parts = 360;
     vector<double> sigma(parts), x(parts);
     for(int i = 0; i < parts; ++i){
@@ -53,10 +55,9 @@ int main(int argc, char* argv[]){
         vec3 tau({cos(alpha), sin(alpha), 0});
         sigma[i] = calcSigma(g, j, k, tau);
         x[i] = i / 2.;
-        if(i % 72 == 0) {
-            spdlog::info("{:2}%", double(100 * i) / 360);
-        }
+        p.update();
     }
+    std::cerr << std::endl;
     spdlog::info("Saving Radar cross-section at ./logs/sigma.txt");
     ofstream out("./logs/sigma.txt");
     for(int i = 0; i < parts; ++i){

@@ -1,5 +1,6 @@
 #include "Magnetic.h"
 #include "Geometry.h"
+#include "progressbar.h"
 
 using arma::cx_mat;
 using arma::cx_vec;
@@ -267,6 +268,7 @@ complex<double> intEdge(const Grid &g, const pair<int, int> &e1, const pair<int,
 
 void calcMatrixM(const Grid &g, double k, cx_mat &M) {
     int i = 0, j;
+    progressbar p(g.edges.size());
     for(auto [e1, v1]: g.edges){
         j = 0;
         for(auto [e2, v2]: g.edges){
@@ -274,11 +276,13 @@ void calcMatrixM(const Grid &g, double k, cx_mat &M) {
             ++j;
         }
         ++i;
+        p.update();
     }
+    std::cerr << std::endl;
 }
 
-cx_vec calcFM(const Grid &g, double k, vec3 Eplr, vec3 v0) {
-    cx_vec f(g.edges.size());
+void calcFM(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec& f) {
+    progressbar p(g.edges_inner_enum.size());
     int i = 0;
     for(auto [e, v]: g.edges){
         MarkedTriangle tPlus(g.points[e.first], g.points[e.second], g.points[v.first]);
@@ -286,6 +290,7 @@ cx_vec calcFM(const Grid &g, double k, vec3 Eplr, vec3 v0) {
         auto temp = intF(tPlus, k, Eplr, v0) - intF(tMinus, k, Eplr, v0);
         f[i] = temp;
         ++i;
+        p.update();
     }
-    return f;
+    std::cerr << std::endl;
 }

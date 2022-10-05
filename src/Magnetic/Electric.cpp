@@ -1,6 +1,8 @@
 #include "Electric.h"
 #include "armadillo"
 #include <cassert>
+#include "progressbar.h"
+
 
 static
 vec3c gradF(vec3 const& x, vec3 const& y, const double k){
@@ -68,6 +70,7 @@ complex<double> intEdge(const Grid &g, const pair<int, int> &e1, const pair<int,
 
 void calcMatrixE(const Grid &g, double k, cx_mat &M) {
     int i = 0, j;
+    progressbar p(int(g.edges_inner_enum.size()));
     for(auto [e1, v1]: g.edges){
         j = 0;
         if(v1.second == -1){
@@ -82,7 +85,9 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
             ++j;
         }
         ++i;
+        p.update();
     }
+    std::cerr << std::endl;
 }
 
 // (en_x(x), E_plr) e^{i k (v0, x)}
@@ -99,6 +104,7 @@ complex<double> intF(MarkedTriangle const& t, double k, vec3 const& Eplr, vec3 c
 
 void calcFE(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec &f) {
     int i = 0;
+    progressbar p(g.edges_inner_enum.size());
     for(auto [e, v]: g.edges){
         if(v.second == -1){
             continue;
@@ -108,5 +114,7 @@ void calcFE(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec &f) {
         auto temp = intF(tPlus, k, Eplr, v0) - intF(tMinus, k, Eplr, v0);
         f[i] = temp;
         ++i;
+        p.update();
     }
+    std::cerr<<std::endl;
 }
