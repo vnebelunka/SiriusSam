@@ -87,10 +87,10 @@ std::array<double, 3> Grid::get_point_coord(int i) {
 
 void Grid::getMarkedTriangles() {
     for(auto [e, v] : edges){
-        triangles.insert(std::make_pair<std::tuple<int, int, int>, Triangle>
+        triangles.insert(std::make_pair<std::tuple<int, int, int>, MarkedTriangle>
                                  ({e.first, e.second, v.first}, {points[e.first], points[e.second], points[v.first]})
         );
-        triangles.insert(std::make_pair<std::tuple<int, int, int>, Triangle>
+        triangles.insert(std::make_pair<std::tuple<int, int, int>, MarkedTriangle>
                                  ({e.first, e.second, v.second}, {points[e.first], points[e.second], points[v.second]})
         );
     }
