@@ -4,7 +4,7 @@
 #include "progressbar.h"
 
 
-static
+static inline
 vec3c gradF(vec3 const& x, vec3 const& y, const double k){
     static complex<double> i = complex<double>(0, 1);
     double r = dist(x, y);
@@ -12,7 +12,7 @@ vec3c gradF(vec3 const& x, vec3 const& y, const double k){
     return (x - y) * (mult / (4 * M_PI * r));
 }
 
-static
+static inline
 complex<double> ker_operator(vec3 const&x, vec3 const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, const double k){
     vec3c gF = gradF(x, y, k);
     vec3c ker_inner = cross(gF, e(ty, y));
@@ -27,11 +27,8 @@ complex<double> intOperator(MarkedTriangle const& tx, MarkedTriangle const& ty, 
     return integrateGauss(tx, ty, &ker_operator, k);
 }
 
-/*static
-complex<double> ker2(vec3 const &x, MarkedTriangle const &tx){
-    return dot(e(tx, x), e(ty, y));
-}*/
 
+static inline
 complex<double> int2(MarkedTriangle const& tx, MarkedTriangle const& ty){
     const array<vec3, 4> &x = tx.barCoords;
     complex<double> ans = 0;
@@ -91,7 +88,7 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
 }
 
 // (en_x(x), E_plr) e^{i k (v0, x)}
-static
+static inline
 complex<double> kerF(vec3 const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
     static complex<double> i(0., 1.);
     return dot(e(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
