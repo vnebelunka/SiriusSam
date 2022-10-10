@@ -33,7 +33,7 @@ complex<double> int2(MarkedTriangle const& tx, MarkedTriangle const& ty){
     const array<vec3, 4> &x = tx.barCoords;
     complex<double> ans = 0;
     for(int i = 0; i < 4; ++i){
-        ans += dot(e(tx, x[i]), e(ty, x[i])) * w[i];
+        ans += 0.5 * dot(e(tx, x[i]), e(ty, x[i])) * w[i];
     }
     ans *= tx.S;
     return ans;
@@ -91,7 +91,7 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
 static inline
 complex<double> kerF(vec3 const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
     static complex<double> i(0., 1.);
-    return dot(e(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
+    return dot(en(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
 }
 
 static inline

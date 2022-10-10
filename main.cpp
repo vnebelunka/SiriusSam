@@ -53,7 +53,7 @@ int main(int argc, char* argv[]){
     for(int i = 0; i < parts; ++i){
         double alpha = M_PI * i / parts;
         vec3 tau({cos(alpha), sin(alpha), 0});
-        sigma[i] = calcSigma(g, j, k, tau);
+        sigma[i] = calcSigmaE(g, j, k, tau);
         x[i] = i / 2.;
         p.update();
     }

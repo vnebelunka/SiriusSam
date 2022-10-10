@@ -50,7 +50,9 @@ complex<double> integrateGauss(MarkedTriangle const& tx, MarkedTriangle const& t
 double integral1Divr(const Triangle& t, const vec3& a);
 
 
-double calcSigma(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau);
+double calcSigmaM(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau);
+
+double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau);
 
 void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname, const char* fieldIFname);
 
