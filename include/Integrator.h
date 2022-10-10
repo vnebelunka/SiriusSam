@@ -54,7 +54,8 @@ double calcSigmaM(const Grid &g, arma::cx_vec const& j, double k, vec3 const& ta
 
 double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau);
 
-void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname, const char* fieldIFname);
+void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname,
+                   const char* fieldIFname, const char* normalFname);
 
 inline
 vec3 e(MarkedTriangle const& t, vec3 const& x){
@@ -63,7 +64,7 @@ vec3 e(MarkedTriangle const& t, vec3 const& x){
 
 inline
 vec3 en(MarkedTriangle const& t, vec3 const& x){
-    return cross(e(t, x), normal(t.a, t.b, t.c));
+    return cross(e(t, x), t.norm);
 }
 
 

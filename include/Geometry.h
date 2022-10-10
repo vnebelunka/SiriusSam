@@ -81,6 +81,14 @@ struct vec3 {
     }
 };
 
+/**
+ * Normal vector of plane on points a, b, c
+ * @param a 1st point
+ * @param b 2nd point
+ * @param c 3rd point
+ * @return normal vector \f$ n \perp abc \f$
+ */
+vec3 normal(const vec3 &a, const vec3 &b, const vec3 &c);
 
 /**
  * Area of triangle with (a, b, c) vertices.
@@ -120,11 +128,13 @@ struct Triangle{
     array<vec3, 3> sorted;
     double S; ///< area of Triangle
     array<vec3, 4> barCoords; ///< Barycentric coordinates
+    vec3 norm;
     Triangle(const vec3& a, const vec3& b, const vec3& c): a(a), b(b), c(c){
         S = area(a,b,c);
         sorted[0] = a, sorted[1] = b, sorted[2] = c;
         sort(sorted.begin(), sorted.end());
         barCoords = calcBarCoords(a, b, c);
+        norm = normal(a, b, c);
     }
     Triangle& operator=(const Triangle& other) = default;
     bool operator==(Triangle const &other) const{
@@ -146,7 +156,7 @@ struct iTriangle{
 struct MarkedTriangle : Triangle{
     vec3 marked; ///< Marked point of triangle
     MarkedTriangle(vec3 const& v1, vec3 const& v2, vec3 const& v3) : marked(v3), Triangle(v1, v2, v3){}
-    MarkedTriangle(const Triangle &otherT): Triangle(otherT){ marked = otherT.c;}
+    explicit MarkedTriangle(const Triangle &otherT): Triangle(otherT){ marked = otherT.c;}
     bool operator == (const MarkedTriangle &otherT) const{
         return sorted[0] == otherT.sorted[0] && sorted[1] == otherT.sorted[1] && sorted[2] == otherT.sorted[2];
     } //TODO: можно лучше.
@@ -183,14 +193,6 @@ double norm(const vec3 &v);
  */
 double normsqr(const array<complex<double>, 3> &p);
 
-/**
- * Normal vector of plane on points a, b, c
- * @param a 1st point
- * @param b 2nd point
- * @param c 3rd point
- * @return normal vector \f$ n \perp abc \f$
- */
-vec3 normal(const vec3 &a, const vec3 &b, const vec3 &c);
 
 vec3 normal(const Triangle &t);
 

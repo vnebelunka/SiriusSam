@@ -102,7 +102,7 @@ complex<double> cdot(vec3c const &a, vec3 const &b){
 }
 
 vec3c cross(vec3c const &a, vec3 const &b){
-    return {a[1] * b.z - a[2] * b.y, a[1] * b.x - a[0] * b.y, a[0] * b.z - a[2] * b.x};
+    return {a[1] * b.z - a[2] * b.y, a[2] * b.x - a[0] * b.z, a[0] * b.y - a[1] * b.x};
 }
 
 

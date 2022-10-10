@@ -67,5 +67,5 @@ int main(int argc, char* argv[]){
     for(int i = 0; i < parts; ++i){
         out << sigma[i] << " ";
     }
-    calcTotalFlow(g,j,"./logs/points.txt", "./logs/greal.txt", "./logs/gimag.txt");
+    calcTotalFlow(g,j,"./logs/points.txt", "./logs/greal.txt", "./logs/gimag.txt", "./logs/norms.txt");
 }

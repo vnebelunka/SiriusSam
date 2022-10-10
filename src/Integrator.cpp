@@ -77,9 +77,9 @@ double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& ta
         pair<int, int> edges[3];
         edges[0] = {t.iv1, t.iv2}, edges[1] = {t.iv2, t.iv3}, edges[2] = {t.iv1, t.iv3};
         complex<double> coeffs[3];
-        coeffs[0] = calcJ(g, j, edges[0], t.iv3);
-        coeffs[1] = calcJ(g, j, edges[1], t.iv1);
-        coeffs[2] = calcJ(g, j, edges[2], t.iv2);
+        coeffs[0] = calcJ(g, j, edges[0], t.iv3); // c - marked
+        coeffs[1] = calcJ(g, j, edges[1], t.iv1); // a - marked
+        coeffs[2] = calcJ(g, j, edges[2], t.iv2); // b - marked
         Triangle sigmai (g.points[t.iv1], g.points[t.iv2], g.points[t.iv3]);
         vec3c intSigma;
 
@@ -87,7 +87,7 @@ double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& ta
         for(int i = 0; i < 4; ++i){
             vec3c g = (sigmai.c - x[i]) * coeffs[0] + (sigmai.a - x[i]) * coeffs[1] + (sigmai.b - x[i]) * coeffs[2];
             g = g * (1. / sigmai.S);
-            vec3c kervec = cross(g, tau) * -1;
+            vec3c kervec = cross(g, tau);
             vec3c ker = kervec * k * exp(-complex(0., 1.) * k * dot(tau, vec3(x[i])));
             intSigma += ker * w[i];
         }
@@ -97,17 +97,21 @@ double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& ta
     return normsqr(ans) * 4 * M_PI;
 }
 
-void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname, const char* fieldIFname){
+void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname,
+                   const char* fieldIFname, const char* normalFname){
     FILE *fg = fopen(gridFname, "w");
     FILE *fr = fopen(fieldRFname, "w");
     FILE *fi = fopen(fieldIFname, "w");
+    FILE *fn = fopen(normalFname, "w");
     for(auto &t: g.itriangles){
-        Triangle sigmai (g.points[t.iv1], g.points[t.iv2], g.points[t.iv3]);
+        MarkedTriangle sigmai(g.triangles.find({t.iv1, t.iv2, t.iv3})->second);
         vec3 M = (sigmai.a + sigmai.b + sigmai.c) / 3;
         vec3c f = calcFlow(g,j,t);
+        vec3 n = sigmai.norm;
         fprintf(fg, "%lf %lf %lf\n", M.x, M.y, M.z);
         fprintf(fr, "%lf %lf %lf\n", f[0].real(), f[1].real(), f[2].real());
         fprintf(fi, "%lf %lf %lf\n", f[0].imag(), f[1].imag(), f[2].imag());
+        fprintf(fn, "%lf %lf %lf\n", n.x, n.y, n.z);
     }
-    fclose(fg), fclose(fr), fclose(fi);
+    fclose(fg), fclose(fr), fclose(fi), fclose(fn);
 }

@@ -8,8 +8,8 @@ static inline
 vec3c gradF(vec3 const& x, vec3 const& y, const double k){
     static complex<double> i = complex<double>(0, 1);
     double r = dist(x, y);
-    complex<double> mult = exp(i * k * r) * (i * k * r - 1.) / (r * r);
-    return (x - y) * (mult / (4 * M_PI * r));
+    complex<double> mult = exp(i * k * r) * (i * k * r - 1.) / (r * r * r);
+    return (x - y) * (mult / (4 * M_PI));
 }
 
 static inline
@@ -91,7 +91,7 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
 static inline
 complex<double> kerF(vec3 const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
     static complex<double> i(0., 1.);
-    return dot(en(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
+    return -dot(en(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
 }
 
 static inline
@@ -106,8 +106,8 @@ void calcFE(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec &f) {
         if(v.second == -1){
             continue;
         }
-        MarkedTriangle tPlus(g.points[e.first], g.points[e.second], g.points[v.first]);
-        MarkedTriangle tMinus(g.points[e.first], g.points[e.second], g.points[v.second]);
+        MarkedTriangle tPlus(g.triangles.find({e.first, e.second, v.first})->second);
+        MarkedTriangle tMinus(g.triangles.find({e.first, e.second, v.second})->second);
         auto temp = intF(tPlus, k, Eplr, v0) - intF(tMinus, k, Eplr, v0);
         f[i] = temp;
         ++i;
