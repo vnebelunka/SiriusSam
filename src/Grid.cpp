@@ -86,25 +86,20 @@ std::array<double, 3> Grid::get_point_coord(int i) {
 }
 
 void Grid::getMarkedTriangles() {
-    bool first = false;
 
-    vec3 lastNorm({0,0,0});
     for(auto [e, v] : edges){
         MarkedTriangle t1(points[e.first], points[e.second], points[v.first]);
-        if(first && dot(t1.norm, lastNorm) < 0){
+        if(dot(t1.norm, (t1.a + t1.b + t1.c) / 3) < 0){
             t1.norm *= -1;
         }
-        lastNorm = t1.norm;
         cout << t1.norm << endl;
-        first = true;
         triangles.insert({{e.first, e.second, v.first}, t1});
 
         MarkedTriangle t2(points[e.first], points[e.second], points[v.second]);
-        if(dot(t2.norm, lastNorm) < 0){
+        if(dot(t2.norm, (t2.a + t2.b + t2.c) / 3) < 0){
             t2.norm *= -1;
         }
         cout << t2.norm << endl;
-        lastNorm = t2.norm;
         triangles.insert({{e.first, e.second, v.second}, t2});
     }
 }
