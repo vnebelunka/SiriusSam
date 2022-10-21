@@ -25,7 +25,6 @@ int main(int argc, char* argv[]){
     Grid g(dname);
     g.read();
     g.get_unique_edges();
-    g.getMarkedTriangles();
     g.enum_inner_edges();
     size_t n = g.edges_inner_enum.size();
     double d = g.diametr_grid();
