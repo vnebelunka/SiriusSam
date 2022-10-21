@@ -94,7 +94,7 @@ double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& ta
         intSigma = intSigma * sigmai.S;
         ans += intSigma;
     }
-    return normsqr(ans) * 4 * M_PI;
+    return normsqr(ans) / (4 * M_PI);
 }
 
 void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname,

@@ -48,7 +48,15 @@ void Grid::insert_edge(int e1, int e2, int v) {
 void Grid::get_unique_edges() {
     for(auto &t : itriangles){
         std::array<int, 3> e({t.iv1, t.iv2, t.iv3});
+        MarkedTriangle tm(points[t.iv1], points[t.iv2], points[t.iv3]);
         std::sort(e.begin(), e.end()); //TODO: возможно лучше ручками
+        tm.marked = points[e[2]];
+        triangles.insert({{e[0], e[1], e[2]}, tm});
+        tm.marked = points[e[1]];
+        triangles.insert({{e[0], e[2], e[1]}, tm});
+        tm.marked = points[e[0]];
+        triangles.insert({{e[1], e[2], e[0]}, tm});
+
         insert_edge(e[0], e[1], e[2]);
         insert_edge(e[0], e[2], e[1]);
         insert_edge(e[1], e[2], e[0]);
@@ -83,25 +91,6 @@ std::array<vec3, 3> Grid::get_points(iTriangle t) {
 
 std::array<double, 3> Grid::get_point_coord(int i) {
     return {points[i].x, points[i].y, points[i].z};
-}
-
-void Grid::getMarkedTriangles() {
-
-    for(auto [e, v] : edges){
-        MarkedTriangle t1(points[e.first], points[e.second], points[v.first]);
-        if(dot(t1.norm, (t1.a + t1.b + t1.c) / 3) < 0){
-            t1.norm *= -1;
-        }
-        cout << t1.norm << endl;
-        triangles.insert({{e.first, e.second, v.first}, t1});
-
-        MarkedTriangle t2(points[e.first], points[e.second], points[v.second]);
-        if(dot(t2.norm, (t2.a + t2.b + t2.c) / 3) < 0){
-            t2.norm *= -1;
-        }
-        cout << t2.norm << endl;
-        triangles.insert({{e.first, e.second, v.second}, t2});
-    }
 }
 
 bool Grid::check_dist(pair<int, int> p1, pair<int, int> p2) const { //TODO: в треугольнике можно хранить max ребро

@@ -21,7 +21,7 @@ struct Grid{
     std::vector<iTriangle> itriangles = {};
 
     std::map<std::pair<int, int>, std::pair<int, int>> edges;
-    std::map<std::tuple<int, int, int>, Triangle> triangles = {};
+    std::map<std::tuple<int, int, int>, MarkedTriangle> triangles = {};
     std::map<std::pair<int,int>, int> edges_inner_enum;
 
     Grid(const char *file_name);
@@ -43,8 +43,6 @@ struct Grid{
     //void plot_grid();
 
     std::vector<Triangle> get_unique_tringles();
-
-    void getMarkedTriangles();
 
     ~Grid(){data_file.close();}
 

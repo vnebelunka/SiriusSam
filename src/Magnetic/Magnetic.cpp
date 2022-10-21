@@ -285,8 +285,8 @@ void calcFM(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec& f) {
     progressbar p(g.edges_inner_enum.size());
     int i = 0;
     for(auto [e, v]: g.edges){
-        MarkedTriangle tPlus(g.points[e.first], g.points[e.second], g.points[v.first]);
-        MarkedTriangle tMinus(g.points[e.first], g.points[e.second], g.points[v.second]);
+        MarkedTriangle tPlus(g.triangles.find({e.first, e.second, v.first})->second);
+        MarkedTriangle tMinus(g.triangles.find({e.first, e.second, v.second})->second);
         auto temp = intF(tPlus, k, Eplr, v0) - intF(tMinus, k, Eplr, v0);
         f[i] = temp;
         ++i;
