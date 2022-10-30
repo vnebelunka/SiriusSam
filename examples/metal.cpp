@@ -33,7 +33,7 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
             if(v2.second == -1){
                 continue;
             }
-            M(i,j) = intEdge_en_Re(g, e1, e2, v1, v2, k) - 0.5 * intEdge_e1_e2(g, e1, e2, v1, v2);
+            M(i,j) = intEdge_en_Re(g, e1, e2, v1, v2, k) + 0.5 * intEdge_e1_e2(g, e1, e2, v1, v2);
             ++j;
         }
         ++i;
