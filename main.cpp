@@ -27,5 +27,5 @@ int main(int argc, char* argv[]){
     logger->info("Diameter of grid (max Edge length) = d = {}, lambda/d = {}\n", d, d / (2. * M_PI / k));
     logger->info("Num of Triangles: {}, Num of Edges: {}", g.triangles.size(), g.edges.size());
     spdlog::info("Starting calculation of Matrix coefficients");
-    metal_proceed(logger, g, k, 'E');
+    metal_proceed(logger, g, k, 'M');
 }

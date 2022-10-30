@@ -9,8 +9,12 @@
 using arma::cx_mat;
 using arma::cx_vec;
 
-void calcMatrixM(const Grid &g, double k, cx_mat& M);
+complex<double>
+intEdge_e_Ke(const Grid &g, const pair<int, int> &e1, const pair<int, int> &e2, const pair<int, int> &v1,
+             const pair<int, int> &v2, double k);
 
-void calcFM(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec &f);
+complex<double>
+intEdge_e_Einc(const Grid &g, std::pair<int, int> e, std::pair<int, int> v,
+               double k, vec3 const& Eplr, vec3 const& v0);
 
 #endif //SIRIUSSAM_MAGNETIC_H
