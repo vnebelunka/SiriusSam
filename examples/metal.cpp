@@ -3,8 +3,8 @@
 
 #include "Grid.h"
 #include "Integrator.h"
-#include "Magnetic.h"
-#include "Electric.h"
+#include "operatorK.h"
+#include "operatorR.h"
 #include "progressbar.h"
 
 void calcFE(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec &f) {
@@ -33,7 +33,7 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
             if(v2.second == -1){
                 continue;
             }
-            M(i,j) = intEdge_en_Re(g, e1, e2, v1, v2, k);;
+            M(i,j) = intEdge_en_Re(g, e1, e2, v1, v2, k) - 0.5 * intEdge_e1_e2(g, e1, e2, v1, v2);
             ++j;
         }
         ++i;
