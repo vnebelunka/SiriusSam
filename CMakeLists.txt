@@ -17,9 +17,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
 add_executable(Sirius main.cpp include/Grid.h test/test.cpp include/Geometry.h
         src/Geometry.cpp include/Integrator.h src/Integrator.cpp src/Grid.cpp
-        src/Integrator.tpp include/Magnetic.h src/Magnetic/Magnetic.cpp
-        src/Magnetic/Electric.cpp include/Electric.h examples/metal.cpp
-        )
+        src/Integrator.tpp include/operatorK.h src/operators/operatorK.cpp
+        src/operators/operatorR.cpp include/operatorR.h examples/metal.cpp
+        examples/dielectric.cpp)
 
 target_include_directories(Sirius PRIVATE include)
 target_link_libraries(Sirius PRIVATE spdlog::spdlog ${ARMADILLO_LIBRARIES})

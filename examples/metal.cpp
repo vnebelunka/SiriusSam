@@ -3,10 +3,76 @@
 
 #include "Grid.h"
 #include "Integrator.h"
-#include "Magnetic.h"
-#include "Electric.h"
+#include "operatorK.h"
+#include "operatorR.h"
 #include "progressbar.h"
 
+void calcFE(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec &f) {
+    int i = 0;
+    progressbar p(g.edges_inner_enum.size());
+    for(auto [e, v]: g.edges){
+        if(v.second == -1){
+            continue;
+        }
+        f[i] = -intEdge_en_Einc(g, e, v, k, Eplr, v0);
+        ++i;
+        p.update();
+    }
+    std::cerr<<std::endl;
+}
+
+void calcMatrixE(const Grid &g, double k, cx_mat &M) {
+    int i = 0, j;
+    progressbar p(int(g.edges_inner_enum.size()));
+    for(auto [e1, v1]: g.edges){
+        j = 0;
+        if(v1.second == -1){
+            continue;
+        }
+        for(auto [e2, v2]: g.edges){
+            if(v2.second == -1){
+                continue;
+            }
+            M(i,j) = intEdge_en_Re(g, e1, e2, v1, v2, k) - 0.5 * intEdge_e1_e2(g, e1, e2, v1, v2);
+            ++j;
+        }
+        ++i;
+        p.update();
+    }
+    std::cerr << std::endl;
+}
+
+void calcFM(const Grid &g, double k, vec3 Eplr, vec3 v0, cx_vec& f) {
+    progressbar p(g.edges_inner_enum.size());
+    int i = 0;
+    for(auto [e, v]: g.edges){
+        f[i] = intEdge_e_Einc(g,e,v,k,Eplr,v0);
+        ++i;
+        p.update();
+    }
+    std::cerr << std::endl;
+}
+
+void calcMatrixM(const Grid &g, double k, cx_mat &M) {
+    int i = 0, j;
+    progressbar p(g.edges.size());
+    for(auto [e1, v1]: g.edges){
+        j = 0;
+        if(v1.second == -1){
+            continue;
+        }
+        for(auto [e2, v2]: g.edges){
+            if(v2.second == -1){
+                continue;
+            }
+            M(i,j) = intEdge_e_Ke(g, e1, e2, v1, v2, k);
+            ++j;
+        }
+        ++i;
+        p.update();
+    }
+    std::cerr << std::endl;
+}
 
 void metal_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double k, char mod='M'){
     /*
