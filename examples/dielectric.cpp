@@ -64,9 +64,10 @@ void dielecrtic_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double k1, 
     for(int i = 0; i < parts; ++i){
         out << sigma[i] << " ";
     }
+     */
     /*
      * Calculating vector flow
      */
-    calcTotalFlow(g,j,"./logs/points.txt", "./logs/greal.txt", "./logs/gimag.txt", "./logs/norms.txt");*/
+    //calcTotalFlow(g,j,"./logs/points.txt", "./logs/greal.txt", "./logs/gimag.txt", "./logs/norms.txt");*/
 }
 
