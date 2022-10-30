@@ -9,10 +9,6 @@
 #include "Magnetic.h"
 #include "Electric.h"
 #include "progressbar.h"
-//#include "matplot/matplot.h"
-
-//TODO: сделать namespace
-//TODO: документация
 
 
 int main(int argc, char* argv[]){
@@ -31,20 +27,32 @@ int main(int argc, char* argv[]){
     logger->info("Diameter of grid (max Edge length) = d = {}, lambda/d = {}\n", d, d / (2. * M_PI / k));
     logger->info("Num of Triangles: {}, Num of Edges: {}", g.triangles.size(), g.edges.size());
     spdlog::info("Starting calculation of Matrix coefficients");
+    /*
+     * Matrix calculation
+     */
     cx_mat A(n, n);
     calcMatrixE(g, k, A);
     spdlog::info("Saving matrix");
     A.save("./logs/matrix.txt", arma::arma_ascii);
+    /*
+     * Calcing free vector f
+     */
     spdlog::info("Starting calculation of right side");
     cx_vec f(n);
     calcFE(g, k, {0, 1, 0}, {-1, 0, 0}, f);
     spdlog::info("Saving right side");
     f.save("./logs/f.txt", arma::arma_ascii);
+    /*
+     * Solving System
+     */
     spdlog::info("Solving linear system");
     cx_vec j;
     arma::solve(j, A, f);
     spdlog::info("Saving system solution");
     j.save("./logs/j.txt", arma::arma_ascii);
+    /*
+     * Calculating radar cross-section
+     */
     spdlog::info("Calculating Radar cross-section");
     progressbar p(360);
     int parts = 360;
@@ -66,5 +74,8 @@ int main(int argc, char* argv[]){
     for(int i = 0; i < parts; ++i){
         out << sigma[i] << " ";
     }
+    /*
+     * Calculating vector flow
+     */
     calcTotalFlow(g,j,"./logs/points.txt", "./logs/greal.txt", "./logs/gimag.txt", "./logs/norms.txt");
 }

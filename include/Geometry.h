@@ -125,20 +125,21 @@ double dot(const vec3 &a , const vec3 &b);
  */
 struct Triangle{
     vec3 a, b, c; ///< Points of triangle
-    array<vec3, 3> sorted;
     double S; ///< area of Triangle
     array<vec3, 4> barCoords; ///< Barycentric coordinates
     vec3 norm;
-    Triangle(const vec3& a, const vec3& b, const vec3& c): a(a), b(b), c(c){
+    Triangle(const vec3& a, const vec3& b, const vec3& c){
         S = area(a,b,c);
+        array<vec3, 3> sorted;
         sorted[0] = a, sorted[1] = b, sorted[2] = c;
         sort(sorted.begin(), sorted.end());
         barCoords = calcBarCoords(a, b, c);
         norm = normal(a, b, c);
+        this->a = sorted[0], this->b = sorted[1], this->c = sorted[2];
     }
     Triangle& operator=(const Triangle& other) = default;
     bool operator==(Triangle const &other) const{
-        return sorted[0] == other.sorted[0] && sorted[1] == other.sorted[1] && sorted[2] == other.sorted[2];
+        return a == other.a && b == other.b && c == other.c;
     }
 };
 
@@ -156,9 +157,9 @@ struct iTriangle{
 struct MarkedTriangle : Triangle{
     vec3 marked; ///< Marked point of triangle
     MarkedTriangle(vec3 const& v1, vec3 const& v2, vec3 const& v3) : marked(v3), Triangle(v1, v2, v3){}
-    explicit MarkedTriangle(const Triangle &otherT): Triangle(otherT){ marked = otherT.c;}
+    //explicit MarkedTriangle(const Triangle &otherT): Triangle(otherT){ marked = otherT.c;}
     bool operator == (const MarkedTriangle &otherT) const{
-        return sorted[0] == otherT.sorted[0] && sorted[1] == otherT.sorted[1] && sorted[2] == otherT.sorted[2];
+        return a == otherT.a && b == otherT.b && c == otherT.c;
     } //TODO: можно лучше.
 };
 

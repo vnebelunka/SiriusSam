@@ -54,12 +54,13 @@ double calcSigmaM(const Grid &g, arma::cx_vec const& j, double k, vec3 const& ta
         coeffs[0] = calcJ(g, j, edges[0], t.iv3);
         coeffs[1] = calcJ(g, j, edges[1], t.iv1);
         coeffs[2] = calcJ(g, j, edges[2], t.iv2);
-        Triangle sigmai (g.points[t.iv1], g.points[t.iv2], g.points[t.iv3]);
+        vec3 A = g.points[t.iv1], B = g.points[t.iv2], C = g.points[t.iv3];
+        Triangle sigmai (A, B, C);
         vec3c intSigma;
 
         const array<vec3, 4> &x = sigmai.barCoords;
         for(int i = 0; i < 4; ++i){
-            vec3c g = (sigmai.c - x[i]) * coeffs[0] + (sigmai.a - x[i]) * coeffs[1] + (sigmai.b - x[i]) * coeffs[2];
+            vec3c g = (C - x[i]) * coeffs[0] + (A - x[i]) * coeffs[1] + (B - x[i]) * coeffs[2];
             g = g * (1. / sigmai.S);
             vec3c kervec = g - tau * dot(tau, g);
             vec3c ker = kervec * k * k * exp(-complex(0., 1.) * k * dot(tau, vec3(x[i])));
@@ -80,12 +81,13 @@ double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& ta
         coeffs[0] = calcJ(g, j, edges[0], t.iv3); // c - marked
         coeffs[1] = calcJ(g, j, edges[1], t.iv1); // a - marked
         coeffs[2] = calcJ(g, j, edges[2], t.iv2); // b - marked
-        Triangle sigmai (g.points[t.iv1], g.points[t.iv2], g.points[t.iv3]);
+        vec3 A = g.points[t.iv1], B = g.points[t.iv2], C = g.points[t.iv3];
+        Triangle sigmai (A, B, C);
         vec3c intSigma;
 
         const array<vec3, 4> &x = sigmai.barCoords;
         for(int i = 0; i < 4; ++i){
-            vec3c g = (sigmai.c - x[i]) * coeffs[0] + (sigmai.a - x[i]) * coeffs[1] + (sigmai.b - x[i]) * coeffs[2];
+            vec3c g = (C - x[i]) * coeffs[0] + (A - x[i]) * coeffs[1] + (B - x[i]) * coeffs[2];
             g = g * (1. / sigmai.S);
             vec3c kervec = cross(g, tau);
             vec3c ker = kervec * k * exp(-complex(0., 1.) * k * dot(tau, vec3(x[i])));
