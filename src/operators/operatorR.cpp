@@ -22,13 +22,6 @@ complex<double> ker_en_Re(vec3 const&x, vec3 const&y, MarkedTriangle const& tx, 
     return cdot(ker_inner, en(tx, x));
 }
 
-static inline
-complex<double> ker_e_Ren(vec3 const&x, vec3 const&y, MarkedTriangle const& tx, MarkedTriangle const& ty, const double k){
-    vec3c gf = gradF(x, y, k);
-    vec3c ker_inner = cross(gf, en(ty, y));
-    return cdot(ker_inner, en(tx, x));
-}
-
 static inline // (en, Re)
 complex<double> int_en_Re(MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
     if(tx == ty){
@@ -37,21 +30,10 @@ complex<double> int_en_Re(MarkedTriangle const& tx, MarkedTriangle const& ty, do
     return integrateGauss(tx, ty, &ker_en_Re, k);
 }
 
-static inline
-complex<double> int_e_Ren(MarkedTriangle const& tx, MarkedTriangle const& ty, double k){
-    return integrateGauss(tx, ty, &ker_e_Ren, k);
-}
-
 // (en, R e)
 complex<double> intEdge_e_Ren(const Grid &g, const pair<int, int> &e1, const pair<int, int> &e2, const pair<int, int> &v1,
                               const pair<int, int> &v2, double k){
-    MarkedTriangle txPlus(g.triangles.find({e1.first, e1.second, v1.first})->second);
-    MarkedTriangle txMinus(g.triangles.find({e1.first, e1.second, v1.second})->second);
-    MarkedTriangle tyPlus(g.triangles.find({e2.first, e2.second, v2.first})->second);
-    MarkedTriangle tyMinus(g.triangles.find({e2.first, e2.second, v2.second})->second);
-    complex<double> ans = int_en_Re(txPlus, tyPlus, k) + int_en_Re(txMinus, tyMinus, k);
-    ans -= int_e_Ren(txMinus, tyPlus, k) + int_e_Ren(txPlus, tyMinus, k);
-    return ans;
+    return -intEdge_en_Re(g,e1,e2,v1,v2,k);
 }
 
 
@@ -63,7 +45,7 @@ complex<double> int_e1_e2(MarkedTriangle const& tx, MarkedTriangle const& ty){
     const array<vec3, 4> &x = tx.barCoords;
     complex<double> ans = 0;
     for(int i = 0; i < 4; ++i){
-        ans += dot(e(tx, x[i]), e(ty, x[i])) * w[i];
+        ans += dot(e(tx, x[i]), e(ty, x[i])) * barweights_4[i];
     }
     ans *= tx.S;
     return ans;

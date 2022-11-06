@@ -1,6 +1,6 @@
 #include "Integrator.h"
 
-static const std::array<double, 4> w ({-9./16, 25./48, 25./48, 25./48});
+static const std::array<double, 4> barweights_4 ({-9. / 16, 25. / 48, 25. / 48, 25. / 48});
 
 template<typename ... Args>
 complex<double> integrateGauss(MarkedTriangle const& tx, MarkedTriangle const& ty,
@@ -9,7 +9,7 @@ complex<double> integrateGauss(MarkedTriangle const& tx, MarkedTriangle const& t
     complex<double> ans = 0;
     for(int i = 0; i < 4; ++i){
         for(int j = 0; j < 4; ++j){
-            ans += f(x[i], y[j], tx, ty,args...) * w[i] * w[j];
+            ans += f(x[i], y[j], tx, ty,args...) * barweights_4[i] * barweights_4[j];
         }
     }
     ans *= ty.S;
@@ -22,7 +22,7 @@ complex<double> integrateGauss(Triangle const& t, complex<double> (*f)(vec3 cons
     const array<vec3, 4> &x = t.barCoords;
     complex<double> ans = 0;
     for(int i = 0; i < 4; ++i){
-        ans += f(x[i], args...) * w[i];
+        ans += f(x[i], args...) * barweights_4[i];
     }
     ans *= t.S;
     return ans;

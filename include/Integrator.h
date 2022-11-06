@@ -54,6 +54,8 @@ double calcSigmaM(const Grid &g, arma::cx_vec const& j, double k, vec3 const& ta
 
 double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau);
 
+double calcSigmaEM(const Grid &g, arma::cx_vec const& je, arma::cx_vec const& jm, double k, double w, double eps, vec3 const& tau);
+
 void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname,
                    const char* fieldIFname, const char* normalFname);
 

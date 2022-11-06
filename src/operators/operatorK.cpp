@@ -267,7 +267,7 @@ intEdge_e_Ke(const Grid &g, const pair<int, int> &e1, const pair<int, int> &e2, 
         ans = intNear_e_Ke(txPlus, tyPlus, k) + intNear_e_Ke(txMinus, tyMinus, k);
         ans -= intNear_e_Ke(txPlus, tyMinus, k) + intNear_e_Ke(txMinus, tyPlus, k);
     }
-    return ans;
+    return ans / (4 * M_PI);
 }
 
 complex<double>

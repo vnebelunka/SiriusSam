@@ -15,6 +15,9 @@ using arma::cx_vec;
 complex<double>
 intEdge_en_Re(const Grid &g, const pair<int, int> &e1, const pair<int, int> &e2, const pair<int, int> &v1,
                               const pair<int, int> &v2, double k);
+complex<double>
+intEdge_e_Ren(const Grid &g, const pair<int, int> &e1, const pair<int, int> &e2, const pair<int, int> &v1,
+              const pair<int, int> &v2, double k);
 
 complex<double>
 intEdge_en_Einc(const Grid &g, std::pair<int, int> e, std::pair<int, int> v,

@@ -11,6 +11,8 @@
 #include "progressbar.h"
 
 void metal_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double k, char mod='M');
+void dielecrtic_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double w, double k1, double k2, double eps1, double eps2,
+                        bool load=false);
 
 int main(int argc, char* argv[]){
     spdlog::info("Welcome to spdlog!");
@@ -26,6 +28,6 @@ int main(int argc, char* argv[]){
     double d = g.diametr_grid();
     logger->info("Diameter of grid (max Edge length) = d = {}, lambda/d = {}\n", d, d / (2. * M_PI / k));
     logger->info("Num of Triangles: {}, Num of Edges: {}", g.triangles.size(), g.edges.size());
-    spdlog::info("Starting calculation of Matrix coefficients");
-    metal_proceed(logger, g, k, 'E');
+    //metal_proceed(logger,g,10, 'M');
+    dielecrtic_proceed(logger,g, 1, 10, 10, 1, 1, false);
 }
