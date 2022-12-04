@@ -50,9 +50,9 @@ complex<double> integrateGauss(MarkedTriangle const& tx, MarkedTriangle const& t
 double integral1Divr(const Triangle& t, const vec3& a);
 
 
-double calcSigmaM(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau);
+double calcSigmaE(const Grid &g, arma::cx_vec const& je, double k, vec3 const& tau);
 
-double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau);
+double calcSigmaM(const Grid &g, arma::cx_vec const& jm, double k, vec3 const& tau);
 
 double calcSigmaEM(const Grid &g, arma::cx_vec const& je, arma::cx_vec const& jm, double k, double w, double eps, vec3 const& tau);
 

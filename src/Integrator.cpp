@@ -45,15 +45,15 @@ vec3c calcFlow(const Grid &g, arma::cx_vec const& j, iTriangle const& t){
     return e1 + e2 + e3;
 }
 
-double calcSigmaM(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau){
+double calcSigmaE(const Grid &g, arma::cx_vec const& je, double k, vec3 const& tau){
     vec3c ans;
     for(auto &t: g.itriangles){
         pair<int, int> edges[3];
         edges[0] = {t.iv1, t.iv2}, edges[1] = {t.iv2, t.iv3}, edges[2] = {t.iv1, t.iv3};
         complex<double> coeffs[3];
-        coeffs[0] = calcJ(g, j, edges[0], t.iv3);
-        coeffs[1] = calcJ(g, j, edges[1], t.iv1);
-        coeffs[2] = calcJ(g, j, edges[2], t.iv2);
+        coeffs[0] = calcJ(g, je, edges[0], t.iv3);
+        coeffs[1] = calcJ(g, je, edges[1], t.iv1);
+        coeffs[2] = calcJ(g, je, edges[2], t.iv2);
         vec3 A = g.points[t.iv1], B = g.points[t.iv2], C = g.points[t.iv3];
         Triangle sigmai (A, B, C);
         vec3c intSigma;
@@ -72,15 +72,15 @@ double calcSigmaM(const Grid &g, arma::cx_vec const& j, double k, vec3 const& ta
     return normsqr(ans) / (4 * M_PI);
 }
 
-double calcSigmaE(const Grid &g, arma::cx_vec const& j, double k, vec3 const& tau){
+double calcSigmaM(const Grid &g, arma::cx_vec const& jm, double k, vec3 const& tau){
     vec3c ans;
     for(auto &t: g.itriangles){
         pair<int, int> edges[3];
         edges[0] = {t.iv1, t.iv2}, edges[1] = {t.iv2, t.iv3}, edges[2] = {t.iv1, t.iv3};
         complex<double> coeffs[3];
-        coeffs[0] = calcJ(g, j, edges[0], t.iv3); // c - marked
-        coeffs[1] = calcJ(g, j, edges[1], t.iv1); // a - marked
-        coeffs[2] = calcJ(g, j, edges[2], t.iv2); // b - marked
+        coeffs[0] = calcJ(g, jm, edges[0], t.iv3); // c - marked
+        coeffs[1] = calcJ(g, jm, edges[1], t.iv1); // a - marked
+        coeffs[2] = calcJ(g, jm, edges[2], t.iv2); // b - marked
         vec3 A = g.points[t.iv1], B = g.points[t.iv2], C = g.points[t.iv3];
         Triangle sigmai (A, B, C);
         vec3c intSigma;
@@ -106,35 +106,46 @@ double calcSigmaEM(const Grid &g, arma::cx_vec const& je, arma::cx_vec const& jm
         pair<int, int> edges[3];
         edges[0] = {t.iv1, t.iv2}, edges[1] = {t.iv2, t.iv3}, edges[2] = {t.iv1, t.iv3};
         complex<double> coeffse[3], coeffsm[3];
-        coeffse[0] = calcJ(g, je, edges[0], t.iv3); // c - marked
-        coeffse[1] = calcJ(g, je, edges[1], t.iv1); // a - marked
-        coeffse[2] = calcJ(g, je, edges[2], t.iv2); // b - marked
+
         vec3 A = g.points[t.iv1], B = g.points[t.iv2], C = g.points[t.iv3];
         Triangle sigmai (A, B, C);
         vec3c intSigma;
 
-        coeffsm[0] = calcJ(g, jm, edges[0], t.iv3); // c - marked
-        coeffsm[1] = calcJ(g, jm, edges[1], t.iv1); // a - marked
-        coeffsm[2] = calcJ(g, jm, edges[2], t.iv2); // b - marked
-
+        if(!je.empty()) {
+            coeffse[0] = calcJ(g, je, edges[0], t.iv3); // c - marked
+            coeffse[1] = calcJ(g, je, edges[1], t.iv1); // a - marked
+            coeffse[2] = calcJ(g, je, edges[2], t.iv2); // b - marked
+        }
+        if(!jm.empty()) {
+            coeffsm[0] = calcJ(g, jm, edges[0], t.iv3); // c - marked
+            coeffsm[1] = calcJ(g, jm, edges[1], t.iv1); // a - marked
+            coeffsm[2] = calcJ(g, jm, edges[2], t.iv2); // b - marked
+        }
         const array<vec3, 4> &x = sigmai.barCoords;
         for(int m = 0; m < 4; ++m){
+            vec3c kervec;
+            vec3c ker;
+            //calcSigmaM part
+            if(!jm.empty()) {
+                vec3c gm = (C - x[m]) * coeffsm[0] + (A - x[m]) * coeffsm[1] + (B - x[m]) * coeffsm[2];
+                gm = gm * (1. / sigmai.S);
+                kervec = cross(gm, tau);
+                ker = kervec * k * exp(-i * k * dot(tau, vec3(x[m])));
+                intSigma = ker * barweights_4[m] * (i / (4 * M_PI));
+            }
             //E part
-            vec3c ge = (C - x[m]) * coeffse[0] + (A - x[m]) * coeffse[1] + (B - x[m]) * coeffse[2];
-            ge = ge * (1. / sigmai.S);
-            vec3c kervec = cross(ge, tau);
-            vec3c ker = kervec * k * exp(-i * k * dot(tau, vec3(x[m])));
-            //M part
-            vec3c gm = (C - x[m]) * coeffsm[0] + (A - x[m]) * coeffsm[1] + (B - x[m]) * coeffsm[2];
-            gm = gm * (1. / sigmai.S);
-            kervec = gm - tau * dot(tau, gm);
-            ker = kervec * k * k * exp(-i * k * dot(tau, vec3(x[m])));
-            intSigma += ker * barweights_4[m] * (i / (w * eps));
+            if(!je.empty()) {
+                vec3c ge = (C - x[m]) * coeffse[0] + (A - x[m]) * coeffse[1] + (B - x[m]) * coeffse[2];
+                ge = ge * (1. / sigmai.S);
+                kervec = ge - tau * dot(tau, ge);
+                ker = kervec * k * k * exp(-i * k * dot(tau, vec3(x[m])));
+                intSigma += ker * barweights_4[m] * (i / (4 * M_PI * w * eps));
+            }
         }
         intSigma = intSigma * sigmai.S;
         ans += intSigma;
     }
-    return normsqr(ans) / (4 * M_PI);
+    return normsqr(ans) * (4 * M_PI);
 }
 
 void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname,

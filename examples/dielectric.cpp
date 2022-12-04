@@ -15,11 +15,15 @@ void calcMatrixD(const Grid &g, double w, double k1, double k2, double eps1, dou
         int k = 0;
         for(auto [e2, v2]: g.edges){
             // equations in 1 region
-            M(i, k) = intEdge_e_Ke(g, e1, e2, v1, v2, k1) / (eps1 * w);
+            auto temp = intEdge_e_Ke(g, e1, e2, v1, v2, k1) / (eps1 * w);
+            M(i, k) = temp;
+            temp = -intEdge_e_Ren(g, e1, e2, v1, v2, k1);
             M(i, k + n) = -intEdge_e_Ren(g, e1, e2, v1, v2, k1) + 0.5 * intEdge_e1_e2(g,e1,e2,v1,v2);
             // equations in 2nd region
-            M(i + n, k) = intEdge_e_Ke(g,e1,e2,v1,v2, k2) / (w * eps2);
-            M(i + n, k + n) = -intEdge_e_Ren(g, e1, e2, v1, v2, k2) - 0.5 * intEdge_e1_e2(g,e1,e2,v1,v2);
+            temp = intEdge_e_Ke(g,e1,e2,v1,v2, k2) / (w * eps2);
+            M(i + n, k) = temp;
+            temp = -intEdge_e_Ren(g, e1, e2, v1, v2, k2);
+            M(i + n, k + n) = temp - 0.5 * intEdge_e1_e2(g,e1,e2,v1,v2);
             ++k;
         }
         ++i;

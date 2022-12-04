@@ -118,9 +118,9 @@ void metal_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double k, char m
         double alpha = M_PI * i / parts;
         vec3 tau({cos(alpha), sin(alpha), 0});
         if(mod == 'E') {
-            sigma[i] = calcSigmaE(g, j, k, tau);
-        } else {
             sigma[i] = calcSigmaM(g, j, k, tau);
+        } else {
+            sigma[i] = calcSigmaE(g, j, k, tau);
         }
         x[i] = i / 2.;
         p.update();
