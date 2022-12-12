@@ -14,16 +14,26 @@ void calcMatrixD(const Grid &g, double w, double k1, double k2, double eps1, dou
     for(auto [e1, v1]: g.edges){
         int k = 0;
         for(auto [e2, v2]: g.edges){
-            // equations in 1 region
-            auto temp = intEdge_e_Ke(g, e1, e2, v1, v2, k1) / (eps1 * w);
-            M(i, k) = temp;
-            temp = -intEdge_e_Ren(g, e1, e2, v1, v2, k1);
-            M(i, k + n) = -intEdge_e_Ren(g, e1, e2, v1, v2, k1) + 0.5 * intEdge_e1_e2(g,e1,e2,v1,v2);
-            // equations in 2nd region
-            temp = intEdge_e_Ke(g,e1,e2,v1,v2, k2) / (w * eps2);
-            M(i + n, k) = temp;
-            temp = -intEdge_e_Ren(g, e1, e2, v1, v2, k2);
-            M(i + n, k + n) = temp - 0.5 * intEdge_e1_e2(g,e1,e2,v1,v2);
+//            // equations in 1 region
+//            auto temp = intEdge_e_Ke(g, e1, e2, v1, v2, k1) / (eps1 * w);
+//            M(i, k) = temp;
+//            temp = -intEdge_e_Ren(g, e1, e2, v1, v2, k1);
+//            M(i, k + n) = temp + 0.5 * intEdge_e1_e2(g,e1,e2,v1,v2);
+//            // equations in 2nd region
+//            temp = intEdge_e_Ke(g,e1,e2,v1,v2, k2) / (w * eps2);
+//            M(i + n, k) = temp;
+//            temp = -intEdge_e_Ren(g, e1, e2, v1, v2, k2);
+//            M(i + n, k + n) = temp - 0.5 * intEdge_e1_e2(g,e1,e2,v1,v2);
+//            ++k;
+            assert(i < g.edges.size() && k < g.edges.size());
+            auto temp = 1 / (w * eps1) * intEdge_e_Ke(g,e1,e2,v1,v2,k1) - 1 / (w * eps2) * intEdge_e_Ke(g,e1,e2,v1,v2,k2);
+            M(i,k) = temp;
+            temp = 1 / (w * eps1) * intEdge_e_Ke(g,e1,e2,v1,v2,k1) + 1 / (w * eps2) * intEdge_e_Ke(g,e1,e2,v1,v2,k2);
+            M(i+n,k) = temp;
+            temp = intEdge_e_Ren(g,e1,e2,v1,v2,k2) - intEdge_e_Ren(g,e1,e2,v1,v2,k1) + intEdge_e1_e2(g,e1,e2,v1,v2);
+            M(i,n+k) = temp;
+            temp = -intEdge_e_Ren(g,e1,e2,v1,v2,k2) -intEdge_e_Ren(g,e1,e2,v1,v2,k1);
+            M(i+n,n+k) = temp;
             ++k;
         }
         ++i;
@@ -104,7 +114,7 @@ void dielecrtic_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double w, d
         out << sigma[i] << " ";
     }
 
-    calcTotalFlow(g,je,"./logs/points.txt", "./logs/grealE.txt", "./logs/gimagE.txt", "./logs/norms.txt");
-    calcTotalFlow(g,jm,"./logs/points.txt", "./logs/grealM.txt", "./logs/gimagM.txt", "./logs/norms.txt");
+    calcTotalFlow(g,je,"./logs/points.txt", "./logs/grealE.txt", "./logs/gimagE.txt", "./logs/norms.txt", 'e');
+    calcTotalFlow(g,jm,"./logs/points.txt", "./logs/grealM.txt", "./logs/gimagM.txt", "./logs/norms.txt", 'n');
 }
 

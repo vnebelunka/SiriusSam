@@ -33,7 +33,8 @@ void calcMatrixE(const Grid &g, double k, cx_mat &M) {
             if(v2.second == -1){
                 continue;
             }
-            M(i,j) = intEdge_en_Re(g, e1, e2, v1, v2, k) + 0.5 * intEdge_e1_e2(g, e1, e2, v1, v2);
+            //M(i,j) = intEdge_en_Re(g, e1, e2, v1, v2, k) + 0.5 * intEdge_e1_e2(g, e1, e2, v1, v2);
+            M(i, j) = intEdge_e1_e2(g, e1, e2, v1, v2);
             ++j;
         }
         ++i;
@@ -74,39 +75,43 @@ void calcMatrixM(const Grid &g, double k, cx_mat &M) {
     std::cerr << std::endl;
 }
 
-void metal_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double k, char mod='M'){
+void metal_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double k, char mod='M', bool load=false){
     /*
      * Matrix calculation
      */
     size_t n = g.edges_inner_enum.size();
-    cx_mat A(n, n);
-    if(mod == 'E') {
-        calcMatrixE(g, k, A);
+    cx_vec j(n);
+    if(!load) {
+        cx_mat A(n, n);
+        if (mod == 'E') {
+            calcMatrixE(g, k, A);
+        } else {
+            calcMatrixM(g, k, A);
+        }
+        spdlog::info("Saving matrix");
+        A.save("./logs/matrix.txt", arma::arma_ascii);
+        /*
+         * Calcing free vector f
+         */
+        spdlog::info("Starting calculation of right side");
+        cx_vec f(n);
+        if (mod == 'E') {
+            calcFE(g, k, {0, 1, 0}, {-1, 0, 0}, f);
+        } else {
+            calcFM(g, k, {0, 1, 0}, {-1, 0, 0}, f);
+        }
+        spdlog::info("Saving right side");
+        f.save("./logs/f.txt", arma::arma_ascii);
+        /*
+         * Solving System
+         */
+        spdlog::info("Solving linear system");
+        arma::solve(j, A, f);
+        spdlog::info("Saving system solution");
+        j.save("./logs/j.txt", arma::arma_ascii);
     } else {
-        calcMatrixM(g, k, A);
+        j.load("./logs/j.txt");
     }
-    spdlog::info("Saving matrix");
-    A.save("./logs/matrix.txt", arma::arma_ascii);
-    /*
-     * Calcing free vector f
-     */
-    spdlog::info("Starting calculation of right side");
-    cx_vec f(n);
-    if(mod == 'E') {
-        calcFE(g, k, {0, 1, 0}, {-1, 0, 0}, f);
-    } else {
-        calcFM(g, k, {0, 1, 0}, {-1, 0, 0}, f);
-    }
-    spdlog::info("Saving right side");
-    f.save("./logs/f.txt", arma::arma_ascii);
-    /*
-     * Solving System
-     */
-    spdlog::info("Solving linear system");
-    cx_vec j;
-    arma::solve(j, A, f);
-    spdlog::info("Saving system solution");
-    j.save("./logs/j.txt", arma::arma_ascii);
     /*
      * Calculating radar cross-section
      */
@@ -138,5 +143,5 @@ void metal_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double k, char m
     /*
      * Calculating vector flow
      */
-    calcTotalFlow(g,j,"./logs/points.txt", "./logs/greal.txt", "./logs/gimag.txt", "./logs/norms.txt");
+    calcTotalFlow(g,j,"./logs/points.txt", "./logs/greal.txt", "./logs/gimag.txt", "./logs/norms.txt", 'n');
 }

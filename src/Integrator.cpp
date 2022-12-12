@@ -17,11 +17,20 @@ complex<double> surfIntegral1D(const vector<Triangle> &grid, complex<double> f(v
 complex<double> calcJ(const Grid &g, arma::cx_vec const& j, const pair<int, int> e1, int v){
     pair<int, int> p = {min(e1.first, e1.second), max(e1.first, e1.second)};
     auto it = g.edges.find(p);
-    size_t i = g.edges_inner_enum.find(p)->second;
+    if(it == g.edges.end()){
+        exit(2);
+    }
     auto vertices = it->second;
     if(vertices.second == -1){
         return 0;
     }
+
+    auto it2 = g.edges_inner_enum.find(p);
+    if(it2 == g.edges_inner_enum.end()){
+        exit(3);
+    }
+    size_t i = it2->second;
+
     if(vertices.first == v){
         return j[i];
     }
@@ -31,7 +40,7 @@ complex<double> calcJ(const Grid &g, arma::cx_vec const& j, const pair<int, int>
     exit(1); // Сюда попадать не стоит
 }
 
-vec3c calcFlow(const Grid &g, arma::cx_vec const& j, iTriangle const& t){
+vec3c calcFlow(const Grid &g, arma::cx_vec const& j, iTriangle const& t, const char mod){
     vec3 A(g.points[t.iv1]), B(g.points[t.iv2]), C(g.points[t.iv3]), M((A + B + C) / 3);
     pair<int, int> edges[3];
     edges[0] = {t.iv1, t.iv2}, edges[1] = {t.iv2, t.iv3}, edges[2] = {t.iv1, t.iv3};
@@ -39,9 +48,16 @@ vec3c calcFlow(const Grid &g, arma::cx_vec const& j, iTriangle const& t){
     coeffs[0] = calcJ(g, j, edges[0], t.iv3);
     coeffs[1] = calcJ(g, j, edges[1], t.iv1);
     coeffs[2] = calcJ(g, j, edges[2], t.iv2);
-    vec3c e1 = e(MarkedTriangle(A,B,C), M) * coeffs[0],
-          e2 = e(MarkedTriangle(B, C, A), M) * coeffs[1],
-          e3 = e(MarkedTriangle(A,C,B), M) * coeffs[2];
+    vec3c e1, e2, e3;
+    if(mod == 'n') {
+        e1 = en(MarkedTriangle(A, B, C), M) * coeffs[0];
+        e2 = en(MarkedTriangle(B, C, A), M) * coeffs[1];
+        e3 = en(MarkedTriangle(A, C, B), M) * coeffs[2];
+    } else if(mod == 'e') {
+        e1 = e(MarkedTriangle(A, B, C), M) * coeffs[0];
+        e2 = e(MarkedTriangle(B, C, A), M) * coeffs[1];
+        e3 = e(MarkedTriangle(A, C, B), M) * coeffs[2];
+    }
     return e1 + e2 + e3;
 }
 
@@ -123,24 +139,26 @@ double calcSigmaEM(const Grid &g, arma::cx_vec const& je, arma::cx_vec const& jm
         }
         const array<vec3, 4> &x = sigmai.barCoords;
         for(int m = 0; m < 4; ++m){
-            vec3c kervec;
+            vec3c kervecm, kervece;
             vec3c ker;
             //calcSigmaM part
             if(!jm.empty()) {
                 vec3c gm = (C - x[m]) * coeffsm[0] + (A - x[m]) * coeffsm[1] + (B - x[m]) * coeffsm[2];
                 gm = gm * (1. / sigmai.S);
-                kervec = cross(gm, tau);
-                ker = kervec * k * exp(-i * k * dot(tau, vec3(x[m])));
-                intSigma = ker * barweights_4[m] * (i / (4 * M_PI));
+                kervecm = cross(gm, tau) * k * i;
+                //ker = kervecm * k * exp(-i * k * dot(tau, vec3(x[m])));
+                //intSigma = ker * barweights_4[m] * (i / (4 * M_PI));
             }
             //E part
             if(!je.empty()) {
                 vec3c ge = (C - x[m]) * coeffse[0] + (A - x[m]) * coeffse[1] + (B - x[m]) * coeffse[2];
                 ge = ge * (1. / sigmai.S);
-                kervec = ge - tau * dot(tau, ge);
-                ker = kervec * k * k * exp(-i * k * dot(tau, vec3(x[m])));
+                kervece = ge - tau * dot(tau, ge) * (k * k * i / (w * eps));
+                //ker = kervec * k * k * exp(-i * k * dot(tau, vec3(x[m])));
                 intSigma += ker * barweights_4[m] * (i / (4 * M_PI * w * eps));
             }
+            vec3c kervec = kervece + kervecm;
+            intSigma += kervec * exp(-i * k * dot(tau, vec3(x[m]))) * (1 / (4 * M_PI));
         }
         intSigma = intSigma * sigmai.S;
         ans += intSigma;
@@ -149,19 +167,28 @@ double calcSigmaEM(const Grid &g, arma::cx_vec const& je, arma::cx_vec const& jm
 }
 
 void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname,
-                   const char* fieldIFname, const char* normalFname){
+                   const char* fieldIFname, const char* normalFname, char mod='e'){
     FILE *fg = fopen(gridFname, "w");
     FILE *fr = fopen(fieldRFname, "w");
     FILE *fi = fopen(fieldIFname, "w");
     FILE *fn = fopen(normalFname, "w");
     for(auto &t: g.itriangles){
-        MarkedTriangle sigmai(g.triangles.find({t.iv1, t.iv2, t.iv3})->second);
+        std::array<int, 3> e({t.iv1, t.iv2, t.iv3});
+        std::sort(e.begin(), e.end());
+
+        auto it = g.triangles.find({e[0], e[1], e[2]});
+        if(it == g.triangles.end()){
+            exit(1);
+        }
+        MarkedTriangle sigmai(it->second);
         vec3 M = (sigmai.a + sigmai.b + sigmai.c) / 3;
-        vec3c f = calcFlow(g,j,t);
+        vec3c f = calcFlow(g, j, t, mod);
         vec3 n = sigmai.norm;
+        vec3 fre(f[0].real(), f[1].real(), f[2].real());
+        vec3 fim(f[0].imag(), f[1].imag(), f[2].imag());
         fprintf(fg, "%lf %lf %lf\n", M.x, M.y, M.z);
-        fprintf(fr, "%lf %lf %lf\n", f[0].real(), f[1].real(), f[2].real());
-        fprintf(fi, "%lf %lf %lf\n", f[0].imag(), f[1].imag(), f[2].imag());
+        fprintf(fr, "%lf %lf %lf\n", fre.x, fre.y, fre.z);
+        fprintf(fi, "%lf %lf %lf\n", fim.x, fim.y, fim.z);
         fprintf(fn, "%lf %lf %lf\n", n.x, n.y, n.z);
     }
     fclose(fg), fclose(fr), fclose(fi), fclose(fn);

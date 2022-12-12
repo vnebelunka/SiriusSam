@@ -241,14 +241,14 @@ complex<double> intNear_e_Ke(const MarkedTriangle &tx, MarkedTriangle const& ty,
 
 // (e_x(x), E_plr) e^{i k (v0, x)}
 static // (e, E_inc)
-complex<double> ker_en_Einc(vec3 const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
+complex<double> ker_e_Einc(vec3 const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
     static complex<double> i(0., 1.);
     return dot(e(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
 }
 
 static // (e, E_inc)
-complex<double> int_en_Einc(MarkedTriangle const& t, double k, vec3 const& Eplr, vec3 const& v0){
-    return integrateGauss<MarkedTriangle const &, vec3 const &, vec3 const &, double>(t, &ker_en_Einc, t, Eplr, v0, k);
+complex<double> int_e_Einc(MarkedTriangle const& t, double k, vec3 const& Eplr, vec3 const& v0){
+    return integrateGauss<MarkedTriangle const &, vec3 const &, vec3 const &, double>(t, &ker_e_Einc, t, Eplr, v0, k);
 }
 
 
@@ -275,5 +275,5 @@ intEdge_e_Einc(const Grid &g, std::pair<int, int> e, std::pair<int, int> v,
                 double k, vec3 const& Eplr, vec3 const& v0){
     MarkedTriangle tPlus(g.triangles.find({e.first, e.second, v.first})->second);
     MarkedTriangle tMinus(g.triangles.find({e.first, e.second, v.second})->second);
-    return int_en_Einc(tPlus, k, Eplr, v0) - int_en_Einc(tMinus, k, Eplr, v0);
+    return int_e_Einc(tPlus, k, Eplr, v0) - int_e_Einc(tMinus, k, Eplr, v0);
 }

@@ -11,7 +11,7 @@ const double mu0 = 1.25663706e10-6;
 const double c0 = 299792458;
 
 
-void metal_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double k, char mod='M');
+void metal_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double k, char mod='M', bool load=false);
 void dielecrtic_proceed(shared_ptr<spdlog::logger> &logger, Grid &g, double w, double k1, double k2, double eps1, double eps2,
                         bool load=false);
 
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
     double k2 = n2 * w;
 
 
-    dielecrtic_proceed(logger,g, w, k1, k2, eps1, eps2, true);
+    //dielecrtic_proceed(logger,g, w, k1, k2, eps1, eps2, false);
 
-    //metal_proceed(logger,g, k1, 'E');
+    metal_proceed(logger,g, k1, 'E', false);
 }

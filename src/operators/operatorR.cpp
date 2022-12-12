@@ -77,7 +77,8 @@ complex<double> intEdge_e1_e2(const Grid &g, const pair<int, int> &e1, const pai
 static inline // (en, E_inc)
 complex<double> ker_en_Einc(vec3 const& x, MarkedTriangle const& t, vec3 const& Eplr, vec3 const& v0, double k){
     static complex<double> i(0., 1.);
-    return dot(en(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
+    //return dot(en(t, x), Eplr) * exp(i * k * dot(v0, vec3(x)));
+    return dot(e(t, x), cross(cross(t.norm, Eplr), t.norm)) * exp(i * k * dot(v0, vec3(x)));
 }
 
 static inline // (en, E_inc)

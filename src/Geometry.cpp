@@ -105,6 +105,10 @@ vec3c cross(vec3c const &a, vec3 const &b){
     return {a[1] * b.z - a[2] * b.y, a[2] * b.x - a[0] * b.z, a[0] * b.y - a[1] * b.x};
 }
 
+vec3c cross(vec3c const& a, vec3c const &b){
+    return {a[1] * b[2] -a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]};
+}
+
 
 std::array<vec3, 4> calcBarCoords(const vec3 &a, const vec3 &b, const vec3 &c) {
     std::array<vec3, 4> b_coords;

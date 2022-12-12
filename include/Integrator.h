@@ -57,7 +57,7 @@ double calcSigmaM(const Grid &g, arma::cx_vec const& jm, double k, vec3 const& t
 double calcSigmaEM(const Grid &g, arma::cx_vec const& je, arma::cx_vec const& jm, double k, double w, double eps, vec3 const& tau);
 
 void calcTotalFlow(const Grid &g, arma::cx_vec const& j, const char* gridFname, const char* fieldRFname,
-                   const char* fieldIFname, const char* normalFname);
+                   const char* fieldIFname, const char* normalFname, char mod);
 
 inline
 vec3 e(MarkedTriangle const& t, vec3 const& x){
